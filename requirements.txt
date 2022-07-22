@@ -1,0 +1,9 @@
+GDAL==3.0.2
+matplotlib==3.3.4
+numpy==1.19.2
+osgeo==0.0.1
+scikit_image==0.17.2
+scikit_learn==1.1.1
+skimage==0.0
+tensorflow==2.6.2
+tifffile==2020.10.1

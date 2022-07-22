@@ -1,0 +1,90 @@
+# Recursive Water and Land Mapping
+
+This code has been implemented in Python 3.6.13, using the IDE Pycharm 2021.2.3. 
+
+## Project Structure
+The project is structured as follows.
+
+* `README.md`
+
+* `requirements.txt`
+
+* `./benchmark/`
+
+    * `./deepwatermap_main/` contains part of the deepwatermap algorithm open 
+source code shared in [this GitHub repository](https://github.com/isikdogan/deepwatermap). An `__init__.py`
+file has been added to this directory to treat it as a module.
+    
+    * `./watnet/` contains part of the WatNet algorithm open source code shared 
+in [this GitHub repository](https://github.com/xinluo2018/WatNet). An `__init__.py`
+file has been added to this directory to treat it as a module.
+
+    * `benchmark.py` includes a copy of two functions from
+`./deepwatermap_main/inference.py`. The `main` function contains one change.
+
+* `./logs/` contains the `log` files generated at every code execution.
+
+* `./tools/` contains useful functions.
+    
+    * `operations.py`
+
+    * `path_operations.py`
+
+    * `spectral_index.py`
+
+* `configuration.py` contains the classes `Debug` and `Config`. Some configuration settings 
+must be changed when executing the code with data that is different to the one provided by the 
+authors.
+
+* `main.py` contains the main logic and flow of the code.
+
+* `bayesian_recursive.py` contains the core of the recursive bayesian algorithm for 
+classification.
+
+* `figures.py` includes functions to plot the generated results.
+
+* `image_reader.py` contains the abstract class `ImageReader` and the class `ReadSentinel2` which
+allows the user to read images from a dataset of Sentinel2 images, such as the one provided
+by the authors of this code.
+
+* `./training_data/` contains `pickle` files with saved data from the 
+training stage. If wanting to train the models from scratch, it should be indicated in 
+the `Debug` class from `configuration.py`. Data has been stored in this file because the
+training stage takes long.
+
+* `training.py` contains functions that are linked to the training stage.
+
+* `evaluation.py` contains functions that are linked to the evaluation stage.
+
+## Installation and Running
+Required packages can be installed using the Python package installer `pip`:
+
+<code>pip install -r requirements.txt</code>
+
+Download the data from our Dataset by...
+
+Generate the results presented in our publication by... calling the main function or
+for more detailed guidance check the Jupyter Notebook file...
+
+## References
+
+We would like to highlight that the open source codes of the algorithms used for benchmarking
+purposes were provided by their respective authors:
+
+* The DeepWaterMap algorithm presented in [this GitHub repository](https://github.com/isikdogan/deepwatermap), by 
+L. F. Isikdogan, A.C. Bovik and P. Passalacqua. This algorithm for Water Mapping is presented
+in the following publications:
+    
+    * [Seeing Through the Clouds With DeepWaterMap](https://ieeexplore.ieee.org/document/8913594)
+
+    * [Surface Water Mapping by Deep Learning](https://ieeexplore.ieee.org/document/8013683)
+    
+* The WatNet algorithm presented in [this GitHub repository](https://github.com/xinluo2018/WatNet), by
+Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for Water Mapping is presented in the publication
+[An applicable and automatic method for earth surface water mapping based on multispectral images](https://www.sciencedirect.com/science/article/pii/S0303243421001793).
+
+## Authors
+* Bhavya Duvvuri, from The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
+University, Boston (MA).
+* Helena Calatrava, from the Signal Processing, Imaging, Reasoning and Learning (SPIRAL) Group also at 
+Northeastern University, Boston (MA). 

@@ -1,0 +1,11 @@
+07/20/2022 06:00:55 PM Log file has been created
+07/20/2022 06:00:55 PM Selected scenario: oroville_dam
+07/20/2022 06:00:55 PM Creating instance of Image Reader object...
+07/20/2022 06:00:55 PM Start Training
+07/20/2022 06:00:55 PM Number of available images for training = 4
+07/20/2022 06:01:04 PM Training data is already available --> Loading Gaussian Mixtures
+07/20/2022 06:01:04 PM Training data is already available --> Loading trained Logistic Regression (LR) Model
+07/20/2022 06:01:04 PM Training stage is finished
+07/20/2022 06:01:15 PM Creating instance of RBC objects for Gaussian Mixture, Logistic Regression (LR) and Scaled Index models
+07/20/2022 06:01:15 PM Start Evaluation
+07/20/2022 06:01:15 PM Number of available images for evaluation = 45
