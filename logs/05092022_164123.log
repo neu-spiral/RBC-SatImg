@@ -1,0 +1,7 @@
+09/05/2022 04:41:23 PM Log file has been created at 2022-09-05 16:41:23.964099
+09/05/2022 04:41:23 PM Selected scenario: oroville_dam
+09/05/2022 04:41:23 PM Creating instance of Image Reader object...
+09/05/2022 04:41:24 PM Start Training
+09/05/2022 04:41:24 PM Number of available images for training = 4
+09/05/2022 04:41:38 PM Training data is not available --> Generating Gaussian Mixtures
+09/05/2022 04:52:22 PM Training data is not available --> Training Logistic Regression (LR) Model

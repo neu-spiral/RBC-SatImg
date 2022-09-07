@@ -3,18 +3,18 @@ import pickle
 import logging
 
 import numpy as np
-
+from collections import Counter
 from typing import List
 from sklearn.mixture import GaussianMixture
 from sklearn.linear_model import LogisticRegression
 
 from image_reader import ReadSentinel2
 from configuration import Config, Debug
-from tools.spectral_index import get_num_images_in_folder, get_broadband_index, get_labels_from_index, \
-    get_pos_condition_index
+from tools.spectral_index import get_num_images_in_folder, get_broadband_index, get_labels_from_index
 
 
 def training_main(image_reader: ReadSentinel2):
+#     print('1')
     """ Main function of the training stage.
 
     First, the training images available in the training images folder (defined
@@ -31,53 +31,54 @@ def training_main(image_reader: ReadSentinel2):
 
     # Read training images
     training_images = read_training_images(image_reader)
-
+#     print(training_images.shape)
     # Calculate and add the spectral index for all the images
-    index = get_broadband_index(data=training_images, bands=Config.bands_spectral_index)
+    index = get_broadband_index(data=training_images, bands=Config.bands_spectral_index[Config.scenario])
     training_images = np.hstack([training_images, index.reshape(-1, 1)])
     # Get labels from the spectral index values
-    labels = get_labels_from_index(index=index)
-
+    labels = get_labels_from_index(index=index,num_classes=len(Config.classes[Config.scenario]))
+#     print(Counter(labels))
+    
     # Generate Gaussian Mixtures and train the Logistic Regression (LR) model
-    gmm_densities = get_gmm_densities(index=index, images=training_images)
-    trained_lr_model = get_trained_lr_model(gmm_densities=gmm_densities, images=training_images)
+    gmm_densities = get_gmm_densities(index=labels, images=training_images)
+    trained_lr_model = get_trained_lr_model(gmm_densities=gmm_densities, images=training_images,labels=labels)
 
     logging.debug("Training stage is finished")
     return labels, gmm_densities, trained_lr_model
 
 
-def generate_new_labels(images: np.ndarray, gmm_densities: List[GaussianMixture], classes: List[str]):
-    """ Generates labels for the training data of the Logistic Regression Model. The likelihood is obtained 
-    for each Gaussian Mixture and then normalization is applied.
+# def generate_new_labels(images: np.ndarray, gmm_densities: List[GaussianMixture], classes: List[str]):
+#     """ Generates labels for the training data of the Logistic Regression Model. The likelihood is obtained 
+#     for each Gaussian Mixture and then normalization is applied.
     
-    Parameters
-    ----------
-    images : np.ndarray
-        array containing the available training images
-    gmm_densities: List[GaussianMixture]
-        list containing the trained Gaussian Mixture Model densities
-    classes : List[str]
-        list containing the classes to be evaluated for the current scenario
+#     Parameters
+#     ----------
+#     images : np.ndarray
+#         array containing the available training images
+#     gmm_densities: List[GaussianMixture]
+#         list containing the trained Gaussian Mixture Model densities
+#     classes : List[str]
+#         list containing the classes to be evaluated for the current scenario
 
-    Returns
-    -------
-    labels : np.ndarray
-        array containing the generated labels
+#     Returns
+#     -------
+#     labels : np.ndarray
+#         array containing the generated labels
     
-    """
-    # Initialize vector of new calculated labels
-    labels = np.zeros((images.shape[0], len(classes)))
+#     """
+#     # Initialize vector of new calculated labels
+#     labels = np.zeros((images.shape[0], len(classes)))
 
-    # Use of the Gaussian Mixture score_samples function to obtain the likelihood of each Gaussian Mixture
-    for enum, label in enumerate(classes):
-        labels[:, enum] = np.exp(gmm_densities[enum].score_samples(images))
+#     # Use of the Gaussian Mixture score_samples function to obtain the likelihood of each Gaussian Mixture
+#     for enum, label in enumerate(classes):
+#         labels[:, enum] = np.exp(gmm_densities[enum].score_samples(images))
 
-    # Normalization of the obtained label values
-    sum_den = np.sum(labels, axis=1)
-    sum_den_nonzero_positions = np.where(sum_den > 0)
-    labels[sum_den_nonzero_positions, :] = np.divide(labels[sum_den_nonzero_positions, :],
-                                                     sum_den.reshape(sum_den.shape[0], 1)[sum_den_nonzero_positions, :])
-    return labels.argmax(axis=1)
+#     # Normalization of the obtained label values
+#     sum_den = np.sum(labels, axis=1)
+#     sum_den_nonzero_positions = np.where(sum_den > 0)
+#     labels[sum_den_nonzero_positions, :] = np.divide(labels[sum_den_nonzero_positions, :],
+#                                                      sum_den.reshape(sum_den.shape[0], 1)[sum_den_nonzero_positions, :])
+#     return labels.argmax(axis=1)
 
 
 def read_training_images(image_reader: ReadSentinel2):
@@ -94,6 +95,7 @@ def read_training_images(image_reader: ReadSentinel2):
         all the bands of the available training images
 
     """
+#     print('2')
     # Path where the training images are stored
     path_training_images = os.path.join(Config.path_sentinel_images, Config.scenario, 'training')
 
@@ -109,7 +111,7 @@ def read_training_images(image_reader: ReadSentinel2):
                                                    image_type=Config.image_types[Config.scenario],
                                                    file_extension='.tif')
     logging.debug(f"Number of available images for training = {num_training_images}")
-
+    
     # Images are read and stored in *images_all_bands*
     size_image = Config.image_dimensions[Config.scenario]['dim_x'] * Config.image_dimensions[Config.scenario]['dim_y']
     # Initialize empty vector with shape
@@ -129,6 +131,7 @@ def read_training_images(image_reader: ReadSentinel2):
 
 
 def get_gmm_densities(images: np.ndarray, index: np.ndarray):
+#     print('3')
     """ Gets the value of the Gaussian Mixture Model densities used in the training and evaluation stages.
     - If Debug.gmm_dump_pickle = False, the data has already been generated and stored in a pickle file.
     This function therefore loads the available data.
@@ -153,12 +156,13 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
 
     # If user wants to generate training data from scratch
     if Debug.gmm_dump_pickle:
+        
 
         logging.debug("Training data is not available --> Generating Gaussian Mixtures")
 
         # Set empty list where the calculated densities will be stored
         gmm_densities = []
-
+        
         # Fitting GMMs for the classes
         for class_idx in range(len(Config.classes[Config.scenario])):
             # Get the number of components per gaussian distribution from the configuration file
@@ -166,12 +170,13 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
 
             # The thresholds defined in the configuration file determine which are the positions
             # of the pixels are to be evaluated for each Gaussian Mixture
-            target_positions = get_pos_condition_index(class_idx=class_idx, spectral_index=index)
-
+#             target_positions = get_pos_condition_index(class_idx=class_idx, spectral_index=index)
+            
             # Cut the number of pixels used for training if the code execution is too slow
             # by using the parameter *Config.training_data_crop*
+            
             gmm_densities.append(GaussianMixture(n_components=num_components).fit(
-                images[target_positions, :-1][0:int(Config.training_data_crop[Config.scenario] * images.shape[0])]))
+                images[index==class_idx, :-1][0:int(Config.training_data_crop_ratio[Config.scenario] * images.shape[0])]))
 
         # Dump data into pickle
         pickle.dump(gmm_densities, open(pickle_file_path, 'wb'))
@@ -186,7 +191,7 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
     return gmm_densities
 
 
-def get_trained_lr_model(images: np.ndarray, gmm_densities: List[GaussianMixture]):
+def get_trained_lr_model(images: np.ndarray, gmm_densities: List[GaussianMixture],labels: np.ndarray):
     """ Trains the Logistic Regression (LR) model with the available training images and using the generated
     Gaussian Mixture Model densities.
     - If Debug.trained_lr_model_pickle = False, the data has already been generated and stored in a pickle file.
@@ -212,13 +217,13 @@ def get_trained_lr_model(images: np.ndarray, gmm_densities: List[GaussianMixture
 
     # If user wants to generate training data from scratch
     if Debug.trained_lr_model_pickle:
+#         print(len(Config.classes[Config.scenario]),'true','lc',Counter(labels))
         logging.debug("Training data is not available --> Training Logistic Regression (LR) Model")
         # Train Logistic Regression (LR) model
         # The last column of the images array is not processed because it contains the spectral index values
-        new_labels = generate_new_labels(images=np.array(images)[:, :-1], gmm_densities=gmm_densities,
-                                         classes=Config.classes[
-                                             Config.scenario])  # only used for training the LR
-        trained_lr_model = LogisticRegression().fit(X=images[:, :-1], y=new_labels)
+#         new_labels = generate_new_labels(images=np.array(images)[:, :-1], gmm_densities=gmm_densities,
+#                                          classes=Config.classes[Config.scenario])  # only used for training the LR
+        trained_lr_model = LogisticRegression().fit(X=images[:, :-1], y= labels)
 
         # Dump data into pickle
         pickle.dump(trained_lr_model, open(pickle_file_path, 'wb'))

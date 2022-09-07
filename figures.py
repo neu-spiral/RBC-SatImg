@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
+from collections import Counter
 from typing import List, Dict
 from matplotlib import colors
 from configuration import Config
@@ -68,10 +68,10 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
     rgb_image = get_rgb_image(image_all_bands=image_all_bands)
 
     # Create figure
-    f, axarr = plt.subplots(1, 8, figsize=(15, 8))
+    f, axarr = plt.subplots(1, 8, figsize=(23,25))
 
     # Define colors to use for the plots
-    cmap = colors.ListedColormap(['yellow', '#440154'])
+    cmap = colors.ListedColormap(Config.cmap[Config.scenario])
 
     # Reshape the labels
     labels = labels.reshape(Config.image_dimensions[Config.scenario]['dim_x'], Config.image_dimensions[Config.scenario]['dim_y'])
@@ -87,7 +87,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
         axarr[4].imshow(predicted_image["GMM"], cmap)
         axarr[5].imshow(predicted_image["Scaled Index"], cmap)
         axarr[6].imshow(predicted_image["Logistic Regression"], cmap)
-        axarr[7].imshow(rgb_image, alpha=1)
+        axarr[7].imshow(rgb_image*Config.enhance[Config.scenario], alpha=1)
     else:
         # If the scene_id is other than 0, the coordinates of the pixels to evaluate are defined
         # in the configuration file.

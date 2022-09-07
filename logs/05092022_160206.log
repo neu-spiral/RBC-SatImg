@@ -1,0 +1,12 @@
+09/05/2022 04:02:06 PM Log file has been created at 2022-09-05 16:02:06.598206
+09/05/2022 04:02:06 PM Selected scenario: charles_river
+09/05/2022 04:02:06 PM Creating instance of Image Reader object...
+09/05/2022 04:02:06 PM Start Training
+09/05/2022 04:02:06 PM Number of available images for training = 4
+09/05/2022 04:02:06 PM Training data is not available --> Generating Gaussian Mixtures
+09/05/2022 04:05:31 PM Log file has been created at 2022-09-05 16:05:31.204257
+09/05/2022 04:05:31 PM Selected scenario: charles_river
+09/05/2022 04:05:31 PM Creating instance of Image Reader object...
+09/05/2022 04:05:31 PM Start Training
+09/05/2022 04:05:31 PM Number of available images for training = 4
+09/05/2022 04:05:32 PM Training data is not available --> Generating Gaussian Mixtures

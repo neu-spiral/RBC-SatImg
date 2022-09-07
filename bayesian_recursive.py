@@ -1,7 +1,5 @@
 import logging
-
 import numpy as np
-
 from typing import List, Dict
 from sklearn.mixture import GaussianMixture
 from configuration import Config
@@ -98,16 +96,17 @@ class RBC:
         # *y_pred* corresponds to the likelihood or the base model posterior
         if time_index == 0:
             self.prior_probability = y_pred
-
+        
         # Calculate the posterior probability
         # Initialize array where the posterior probabilities will be stored
         # Later, this array is updated analysing only the pixels in the subscene
         self.posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
-
+        
+#         print(1, self.prior_probability.shape,y_pred.shape)
         # TODO: This Bhavya added to avoid a dimensional error, but should be changed
         if np.ndim(y_pred) == 3:
             y_pred = y_pred.reshape(self.total_num_pixels, self.num_classes)
-
+#         print(2, self.prior_probability.shape,y_pred.shape)
         # Image with the posterior probabilities for each pixel is calculated
         # Only the pixels from the chosen scene are considered
         # The calculate_posterior function is applied to all the rows
@@ -126,13 +125,9 @@ class RBC:
         self.posterior_probability[self.index_pixels_of_interest] = del_l  # we just save the subscene pixels
 
         # Calculate the class predictions
-        if self.model == 'ndvi_prob':
-            predict_image = self.posterior_probability.argmin(
-                axis=1)  # TODO: try to fix this so that there is no if-else here
-            y_pred = y_pred.argmin(axis=1)
-        else:
-            predict_image = self.posterior_probability.argmax(axis=1)
-            y_pred = y_pred.argmax(axis=1)  # position with maximum values
+        predict_image = self.posterior_probability.argmax(axis=1)
+        y_pred = y_pred.argmax(axis=1)  # position with maximum values
+        
         return y_pred, predict_image
 
     def calculate_prediction(self, image_all_bands: np.ndarray):
@@ -151,9 +146,8 @@ class RBC:
         """
         # Scaled Index Model
         if self.model == "Scaled Index":
-
             # Calculate spectral index, which has range [-1, 1]
-            spectral_index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index)
+            spectral_index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
 
             # Scale the spectral index to range [0, 1] so that it can be seen as a probability
             scaled_index = get_scaled_index(spectral_index=spectral_index, num_classes=self.num_classes)
@@ -161,7 +155,6 @@ class RBC:
 
         # DeepWaterNet Model, used in this project for benchmarking
         elif self.model == "deepwaternet":  # first version
-
             # Select only the bands used in the case of this algorithm
             image_deepwaternet_bands = image_all_bands[:, Config.bands_deepwaternet].reshape(
                 Config.image_dimensions[Config.scenario]['dim_x'],
@@ -179,7 +172,6 @@ class RBC:
         # WatNet Model, used in this project for benchmarking
         # The WatNet model is an improved version of the DeepWaterNet model provided by their authors
         elif self.model == "watnet":
-
             # Select only the bands used in the case of this algorithm
             image_watnet_bands = image_all_bands[:, Config.bands_watnet].reshape(
                 Config.image_dimensions[Config.scenario]['dim_x'],
@@ -238,6 +230,7 @@ class RBC:
         # Posterior probability is calculated here. eq1.
         # self.classes_prior[ct_p] = marginal probability
         post_return = np.zeros(shape=[self.num_classes, self.num_classes])
+#         print(y_pred.shape,'cal_post')
         if self.model != "GMM":  # TODO: Change this
             lik_lb = y_pred[pixel_position]
             #             for each class posterior probability p(water) and p(zt/non water)
@@ -260,7 +253,7 @@ class RBC:
                     b = 0
                     for ct_p in range(self.num_classes):
                         b += (lik_lb[ct_p]) * self.transition_matrix[ct_p, ct_1]
-                    a = self.transition_matrix[ct, ct_1] * self.prior_probability[pixel_position, ct_1]
+                    a = self.transition_matrix[ct, ct_1] * self.prior_probability[pixel_position,ct_1]
                     post_return[ct, ct_1] = a / b
                 post_return[ct, :] = post_return[ct, :] * (lik_lb[ct])
             p = np.sum(post_return, axis=1)
@@ -289,7 +282,7 @@ def get_rbc_objects(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
                   "Index models")
 
     # Extract the desired settings from the configuration file
-    transition_matrix = Config.transition_matrix
+    transition_matrix = Config.transition_matrix[Config.scenario]
     classes = Config.classes[Config.scenario]
     classes_prior = Config.prior_probabilities[Config.scenario]
 

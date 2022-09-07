@@ -97,6 +97,7 @@ class ReadSentinel2(ImageReader):
             read band
 
         """
+#         print(path_band)
         band = gdal.Open(path_band).ReadAsArray()
         # Check if the image dimensions are the proper ones
         if band.shape != (self.dim_x, self.dim_y):
@@ -132,7 +133,6 @@ class ReadSentinel2(ImageReader):
             path_image_band = get_path_image(path_folder=path_band_folder,
                                              image_type=Config.image_types[Config.scenario],
                                              file_extension='.tif', image_index=image_idx)
-
             # Read the corresponding band
             image_band = self.read_band(path_band=path_image_band)
 

@@ -5,46 +5,46 @@ import numpy as np
 from configuration import Config
 from typing import List
 
+# Not used
+# def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
+#     """ Returns the positions of the vector *index* that match the thresholds defined
+#     in the configuration file.
 
-def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
-    """ Returns the positions of the vector *index* that match the thresholds defined
-    in the configuration file.
+#     Parameters
+#     ----------
+#     class_idx : int
+#         index of the evaluated class, which determines which thresholds are to be considered
+#     spectral_index: np.ndarray
+#         array with spectral indexes to be evaluated
 
-    Parameters
-    ----------
-    class_idx : int
-        index of the evaluated class, which determines which thresholds are to be considered
-    spectral_index: np.ndarray
-        array with spectral indexes to be evaluated
+#     Returns
+#     -------
+#     positions : np.ndarray
+#         array with the positions of the vector *index* that match the corresponding thresholds
 
-    Returns
-    -------
-    positions : np.ndarray
-        array with the positions of the vector *index* that match the corresponding thresholds
+#     """
+#     # Get list with the corresponding threshold values from the configuration file
+#     # Being N the number of classes, the class index
+#     threshold_list = Config.gm_model_selection[Config.scenario]['thresholds']
 
-    """
-    # Get list with the corresponding threshold values from the configuration file
-    # Being N the number of classes, the class index
-    threshold_list = Config.gm_model_selection[Config.scenario]['thresholds']
+#     # Create empty array to store the target positions
+#     positions_th_1 = np.empty(shape=0)
+#     first_comparative_applied = 0  # the application of the two comparatives is independent
 
-    # Create empty array to store the target positions
-    positions_th_1 = np.empty(shape=0)
-    first_comparative_applied = 0  # the application of the two comparatives is independent
-
-    # Apply the necessary threshold constraints to select the target positions of the *indexes* vector
-    if class_idx >= 1:
-        # Apply 'greater than' constraint
-        positions_th_1 = np.where(spectral_index >= threshold_list[class_idx - 1])
-        first_comparative_applied = 1
-    if class_idx < len(threshold_list):
-        # Apply 'lower than' constraint
-        positions = np.where(spectral_index < threshold_list[class_idx])
-        # Intersect if 'greater than' limit had been applied
-        if first_comparative_applied:
-            positions = np.intersect1d(positions_th_1, positions)
-    else:
-        positions = positions_th_1
-    return positions[0]
+#     # Apply the necessary threshold constraints to select the target positions of the *indexes* vector
+#     if class_idx >= 1:
+#         # Apply 'greater than' constraint
+#         positions_th_1 = np.where(spectral_index >= threshold_list[class_idx - 1])
+#         first_comparative_applied = 1
+#     if class_idx < len(threshold_list):
+#         # Apply 'lower than' constraint
+#         positions = np.where(spectral_index < threshold_list[class_idx])
+#         # Intersect if 'greater than' limit had been applied
+#         if first_comparative_applied:
+#             positions = np.intersect1d(positions_th_1, positions)
+#     else:
+#         positions = positions_th_1
+#     return positions[0]
 
 
 def get_num_images_in_folder(path_folder: str, image_type: str, file_extension: str):
@@ -148,7 +148,7 @@ def get_broadband_index(data: np.ndarray, bands: List[str]):
     return index_without_nan
 
 
-def get_labels_from_index(index: np.ndarray):
+def get_labels_from_index(index: np.ndarray, num_classes: int):
     """ Calculates labels from the spectral index values for this data set.
 
     Parameters
@@ -162,9 +162,17 @@ def get_labels_from_index(index: np.ndarray):
         array with labels calculated considering the spectral index values
 
     """
-    labels = np.transpose(index.copy())  # TODO: check if this line can be removed
-    np.place(labels, index < 0.13, 0)  # labels under 0 are set to 0
-    np.place(labels, index >= 0.13, 1)  # labels over 0 are set to 1
+    
+    # only for 2 class ?? What about for 3 class?
+    if num_classes == 2:
+        labels = np.transpose(index.copy())  # TODO: check if this line can be removed
+        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)  # labels under 0 are set to 0
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)  # labels over 0 are set to 1
+    elif num_classes == 3:
+        labels = np.transpose(index.copy())  # TODO: check if this line can be removed
+        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0) 
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)  
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][1], 2)
     return labels
 
 
@@ -194,9 +202,12 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
         array_pdf_values = np.array(list_pdf_values)
         sum_pdf_values = np.sum(array_pdf_values, axis=0)
         scaled_index = np.divide(array_pdf_values, sum_pdf_values)
+        scaled_index = np.transpose(scaled_index)
+        
     else:
         scaled_index = (spectral_index.reshape(-1, 1) + 1) / 2
-        probability_water = scaled_index
-        probability_no_water = 1 - scaled_index
+        probability_water = 1-scaled_index
+        probability_no_water = scaled_index
         scaled_index = np.append(probability_water, probability_no_water, axis=1)
+        
     return scaled_index

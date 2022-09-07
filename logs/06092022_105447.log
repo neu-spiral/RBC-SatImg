@@ -1,0 +1,33 @@
+09/06/2022 10:54:47 AM Log file has been created at 2022-09-06 10:54:47.891092
+09/06/2022 10:54:47 AM Selected scenario: charles_river
+09/06/2022 10:54:47 AM Creating instance of Image Reader object...
+09/06/2022 10:54:47 AM Start Training
+09/06/2022 10:54:47 AM Number of available images for training = 3
+09/06/2022 10:54:50 AM Training data is not available --> Generating Gaussian Mixtures
+09/06/2022 10:56:49 AM Training data is not available --> Training Logistic Regression (LR) Model
+09/06/2022 10:57:42 AM Training stage is finished
+09/06/2022 10:57:42 AM Creating instance of RBC objects for Gaussian Mixture, Logistic Regression (LR) and Scaled Index models
+09/06/2022 10:57:42 AM Start Evaluation
+09/06/2022 10:57:42 AM Number of available images for evaluation = 44
+09/06/2022 11:05:37 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\jedi\third_party\typeshed\stdlib\3\builtins.pyi
+09/06/2022 11:05:37 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\jedi\third_party\typeshed\stdlib\3\sys.pyi
+09/06/2022 11:05:38 AM diff parser start
+09/06/2022 11:05:38 AM line_lengths old: 1; new: 1
+09/06/2022 11:05:38 AM -> code[replace] old[1:1] new[1:1]
+09/06/2022 11:05:38 AM parse_part from 1 to 1 (to 0 in part parser)
+09/06/2022 11:05:38 AM diff parser end
+09/06/2022 11:05:38 AM diff parser start
+09/06/2022 11:05:38 AM line_lengths old: 1; new: 1
+09/06/2022 11:05:38 AM -> code[replace] old[1:1] new[1:1]
+09/06/2022 11:05:38 AM parse_part from 1 to 1 (to 0 in part parser)
+09/06/2022 11:05:38 AM diff parser end
+09/06/2022 11:05:40 AM diff parser start
+09/06/2022 11:05:40 AM line_lengths old: 1; new: 1
+09/06/2022 11:05:40 AM -> code[replace] old[1:1] new[1:1]
+09/06/2022 11:05:40 AM parse_part from 1 to 1 (to 0 in part parser)
+09/06/2022 11:05:40 AM diff parser end
+09/06/2022 11:05:40 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\sklearn\linear_model\_logistic.py
+09/06/2022 11:05:40 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\sklearn\__init__.py
+09/06/2022 11:05:40 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\sklearn\linear_model\__init__.py
+09/06/2022 11:05:40 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\sklearn\linear_model\_base.py
+09/06/2022 11:05:40 AM pickle loaded: C:\Users\duvvuri\anaconda3\lib\site-packages\sklearn\base.py

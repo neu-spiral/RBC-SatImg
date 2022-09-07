@@ -1,0 +1,11 @@
+09/06/2022 09:14:06 AM Log file has been created at 2022-09-06 09:14:06.372484
+09/06/2022 09:14:06 AM Selected scenario: charles_river
+09/06/2022 09:14:06 AM Creating instance of Image Reader object...
+09/06/2022 09:14:06 AM Start Training
+09/06/2022 09:14:06 AM Number of available images for training = 3
+09/06/2022 09:14:10 AM Training data is not available --> Generating Gaussian Mixtures
+09/06/2022 09:16:55 AM Training data is not available --> Training Logistic Regression (LR) Model
+09/06/2022 09:21:49 AM Training stage is finished
+09/06/2022 09:21:49 AM Creating instance of RBC objects for Gaussian Mixture, Logistic Regression (LR) and Scaled Index models
+09/06/2022 09:21:49 AM Start Evaluation
+09/06/2022 09:21:49 AM Number of available images for evaluation = 46

@@ -46,21 +46,22 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
     dim_v = Config.image_dimensions[Config.scenario]['dim_y']
 
     # GMM Model
+#     print('GMM')
     y_pred["GMM"], predicted_image["GMM"] = rbc_objects["GMM"].update_labels(image_all_bands=image_all_bands,
                                                                              time_index=time_index)
     predicted_image["GMM"] = predicted_image["GMM"].reshape(dim_h, dim_v)
     y_pred["GMM"] = y_pred["GMM"].reshape(dim_h, dim_v)
-
-    # Scaled Index Model
-    y_pred["Scaled Index"], predicted_image["Scaled Index"] = rbc_objects["Scaled Index"].update_labels(
-        image_all_bands=image_all_bands, time_index=time_index)
+    
+#     print('scaledIndex')    
+       # Scaled Index Model
+    y_pred["Scaled Index"], predicted_image["Scaled Index"] = rbc_objects["Scaled Index"].update_labels(image_all_bands=image_all_bands, time_index=time_index)
     predicted_image["Scaled Index"] = predicted_image["Scaled Index"].reshape(dim_h, dim_v)
     y_pred["Scaled Index"] = y_pred["Scaled Index"].reshape(dim_h, dim_v)
-
+    
     # Logistic Regression Model
     y_pred["Logistic Regression"], predicted_image["Logistic Regression"] = rbc_objects[
         "Logistic Regression"].update_labels(
-        image_all_bands=image_all_bands, time_index=time_index)
+        image_all_bands = image_all_bands, time_index = time_index)
     predicted_image["Logistic Regression"] = predicted_image["Logistic Regression"].reshape(dim_h, dim_v)
     y_pred["Logistic Regression"] = y_pred["Logistic Regression"].reshape(dim_h, dim_v)
 
@@ -122,16 +123,16 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
         image_all_bands = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
 
         # Calculate and add the spectral index for all bands
-        index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index)
+        index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
         image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
 
         # Get labels from the spectral index values
-        labels = get_labels_from_index(index=index)
+        labels = get_labels_from_index(index=index,num_classes=len(Config.classes[Config.scenario]))
 
         # Evaluate the 3 models for one date
         y_pred, predicted_image = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
                                                   time_index=time_index)
-
+#             print(Counter(y_pred["Scaled Index"][x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]]),Counter(predicted_image["Scaled Index"][x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]]))
         # Plot Results at each Image
         # For each Image, we have read as many bands as configured in *Config.bands_to_read*
         # Each Image is linked to one specific Date
