@@ -56,7 +56,7 @@ training stage takes long.
 
 * `evaluation.py` contains functions that are linked to the evaluation stage.
 
-## Installation and Running
+## Installation
 
 ### Geospatial Data Abstraction Library (GDAL) Installation
 Follow these instructions to [install GDAL for Python with pip on Windows](https://opensourceoptions.com/blog/how-to-install-gdal-for-python-with-pip-on-windows/)
