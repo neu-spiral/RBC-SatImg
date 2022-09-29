@@ -64,32 +64,36 @@ or to [install GDAL for Python with Anaconda](https://opensourceoptions.com/blog
 a conda environment with Python 3.8 and run the command `conda install -c conda-forge gdal` in the Anaconda prompt.
 
 ### Other Packages
-Required packages can be installed using the Python package installer `pip`:
+There are other packages besides GDAL that need to be installed. Required packages can be installed using the Python package installer `pip`:
 
 <code>pip install -r requirements.txt</code>
 
 ### Dataset
 Download our dataset *Sentinel-2 Images from Oroville Dam and Charles River* from [this Zenodo link](https://zenodo.org/record/6999172#.YzWyndjMI2x) and extract the `.zip` file. 
-In `configuration.py` (class `Config`), change `path_sentinel_images` to the `sentinel_data` folder path.
+In `configuration.py` (class `Config`), change `path_sentinel_images` to the `sentinel_data` folder path. Images in this dataset are used for
+training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
-Generate the results presented in our publication by... calling the main function or
-for more detailed guidance check the Jupyter Notebook file...
+### Reproduction of Results
+The results presented in our publication can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script).
+
+## Results
+
 
 ## References
 
-We would like to highlight that the open source codes of the algorithms used for benchmarking
-purposes were provided by their respective authors:
+The open source codes of the DeepWaterMap and WaterNet algorithms, used for benchmarking,
+were provided by their respective authors.
 
-* The DeepWaterMap algorithm presented in [this GitHub repository](https://github.com/isikdogan/deepwatermap), by 
-L. F. Isikdogan, A.C. Bovik and P. Passalacqua. This algorithm for Water Mapping is presented
+* DeepWaterMap [(see the GitHub repository)](https://github.com/isikdogan/deepwatermap), by 
+L. F. Isikdogan, A.C. Bovik and P. Passalacqua. This algorithm for water mapping is proposed
 in the following publications:
     
     * [Seeing Through the Clouds With DeepWaterMap](https://ieeexplore.ieee.org/document/8913594)
 
     * [Surface Water Mapping by Deep Learning](https://ieeexplore.ieee.org/document/8013683)
     
-* The WatNet algorithm presented in [this GitHub repository](https://github.com/xinluo2018/WatNet), by
-Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for Water Mapping is presented in the publication
+* WatNet [(see the GitHub repository)](https://github.com/xinluo2018/WatNet), by
+Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is proposed in the publication
 [An applicable and automatic method for earth surface water mapping based on multispectral images](https://www.sciencedirect.com/science/article/pii/S0303243421001793).
 
 ## Authors
