@@ -2,9 +2,10 @@ import os
 import logging
 
 import numpy as np
+import skimage
 
 from osgeo import gdal
-from skimage.transform import resize
+from skimage import transform
 from abc import ABC, abstractmethod
 from configuration import Config
 from tools.path_operations import get_path_image
