@@ -43,6 +43,13 @@ class Config:
     different to the one provided by the authors.
 
     """
+
+    # Paths
+    path_sentinel_images = r"C:\Users\helen\Documents\Northeastern\Project_Water_Mapping\repo\sentinel_data"
+    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark\watnet\model\pretrained\watnet.h5")
+    path_log_files = os.path.join(os.getcwd(), r"logs")
+    path_training_data = os.path.join(os.getcwd(), r"training_data")
+
     # Scenario selection
     scenario = "oroville_dam"  # charles_river | oroville_dam
 
@@ -105,12 +112,6 @@ class Config:
     # Pixel coordinates of the images to read (dimensions)
     # TODO: Change the code so that this does not need to be hardcoded in the configuration file
     image_dimensions = {'charles_river': {'dim_x': 43, 'dim_y': 60}, 'oroville_dam': {'dim_x': 2229, 'dim_y': 3341}}
-
-    # Paths
-    path_sentinel_images = r"C:\Users\helen\Documents\Northeastern\Project_Water_Mapping\repo\sentinel_data"
-    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark\watnet\model\pretrained\watnet.h5")
-    path_log_files = os.path.join(os.getcwd(), r"logs")
-    path_training_data = os.path.join(os.getcwd(), r"training_data")
 
     # Transition Matrix
     # The transition matrix is given by the user (hardcoded in this configuration file)

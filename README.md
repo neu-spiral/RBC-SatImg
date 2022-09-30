@@ -57,11 +57,20 @@ training stage takes long.
 * `evaluation.py` contains functions that are linked to the evaluation stage.
 
 ## Installation and Running
+
+### Geospatial Data Abstraction Library (GDAL) Installation
+Follow these instructions to [install GDAL for Python with pip on Windows](https://opensourceoptions.com/blog/how-to-install-gdal-for-python-with-pip-on-windows/)
+or to [install GDAL for Python with Anaconda](https://opensourceoptions.com/blog/how-to-install-gdal-with-anaconda/). We recommend to create
+a conda environment with Python 3.8 and run the command `conda install -c conda-forge gdal` in the Anaconda prompt.
+
+### Other Packages
 Required packages can be installed using the Python package installer `pip`:
 
 <code>pip install -r requirements.txt</code>
 
-Download the data from our Dataset by...
+### Dataset
+Download our dataset *Sentinel-2 Images from Oroville Dam and Charles River* from [this Zenodo link](https://zenodo.org/record/6999172#.YzWyndjMI2x) and extract the `.zip` file. 
+In `configuration.py` (class `Config`), change `path_sentinel_images` to the `sentinel_data` folder path.
 
 Generate the results presented in our publication by... calling the main function or
 for more detailed guidance check the Jupyter Notebook file...
