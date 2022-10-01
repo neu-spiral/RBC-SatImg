@@ -101,7 +101,7 @@ class ReadSentinel2(ImageReader):
         band = gdal.Open(path_band).ReadAsArray()
         # Check if the image dimensions are the proper ones
         if band.shape != (self.dim_x, self.dim_y):
-            band = resize(band, (self.dim_x, self.dim_y), anti_aliasing=True, preserve_range=True)
+            band = transform.resize(band, (self.dim_x, self.dim_y), anti_aliasing=True, preserve_range=True)
         return band
 
     def read_image(self, path: str, image_idx: int):
