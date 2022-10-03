@@ -74,7 +74,7 @@ In `configuration.py` (class `Config`), change `path_sentinel_images` to the `se
 training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
 ### Reproduction of Results
-The results presented in our publication can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script).
+The results presented in our publication can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)).
 
 ## Results
 A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) everytime the main scripts are executed. Log files contain information
