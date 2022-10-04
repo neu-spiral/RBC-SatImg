@@ -5,7 +5,8 @@ import numpy as np
 from configuration import Config
 from typing import List
 
-
+"""
+# This function is not used
 def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     """ Returns the positions of the vector *index* that match the thresholds defined
     in the configuration file.
@@ -45,7 +46,7 @@ def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     else:
         positions = positions_th_1
     return positions[0]
-
+"""
 
 def get_num_images_in_folder(path_folder: str, image_type: str, file_extension: str):
     """ Returns the number of images with type *image_type* and file extension *file_extension*
@@ -148,7 +149,7 @@ def get_broadband_index(data: np.ndarray, bands: List[str]):
     return index_without_nan
 
 
-def get_labels_from_index(index: np.ndarray):
+def get_labels_from_index(index: np.ndarray, num_classes: int):
     """ Calculates labels from the spectral index values for this data set.
 
     Parameters
@@ -162,9 +163,15 @@ def get_labels_from_index(index: np.ndarray):
         array with labels calculated considering the spectral index values
 
     """
-    labels = np.transpose(index.copy())  # TODO: check if this line can be removed
-    np.place(labels, index < 0.13, 0)  # labels under 0 are set to 0
-    np.place(labels, index >= 0.13, 1)  # labels over 0 are set to 1
+    if num_classes == 2:
+        labels = np.transpose(index.copy())  # TODO: check if this line can be removed
+        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)  # labels under 0 are set to 0
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)  # labels over 0 are set to 1
+    elif num_classes == 3:
+        labels = np.transpose(index.copy())  # TODO: check if this line can be removed
+        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][1], 2)
     return labels
 
 
@@ -194,9 +201,10 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
         array_pdf_values = np.array(list_pdf_values)
         sum_pdf_values = np.sum(array_pdf_values, axis=0)
         scaled_index = np.divide(array_pdf_values, sum_pdf_values)
+        scaled_index = np.transpose(scaled_index)
     else:
         scaled_index = (spectral_index.reshape(-1, 1) + 1) / 2
-        probability_water = scaled_index
-        probability_no_water = 1 - scaled_index
+        probability_water = 1 - scaled_index
+        probability_no_water = scaled_index
         scaled_index = np.append(probability_water, probability_no_water, axis=1)
     return scaled_index

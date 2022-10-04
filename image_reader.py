@@ -2,6 +2,7 @@ import os
 import logging
 
 import numpy as np
+import skimage
 
 from osgeo import gdal
 from skimage import transform
