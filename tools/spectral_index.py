@@ -5,7 +5,7 @@ import numpy as np
 from configuration import Config
 from typing import List
 
-"""
+'''
 # This function is not used
 def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     """ Returns the positions of the vector *index* that match the thresholds defined
@@ -46,7 +46,7 @@ def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     else:
         positions = positions_th_1
     return positions[0]
-"""
+'''
 
 def get_num_images_in_folder(path_folder: str, image_type: str, file_extension: str):
     """ Returns the number of images with type *image_type* and file extension *file_extension*
