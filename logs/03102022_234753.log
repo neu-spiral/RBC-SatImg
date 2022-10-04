@@ -1,0 +1,12 @@
+10/03/2022 11:47:53 PM Log file has been created at 2022-10-03 23:47:53.480249
+10/03/2022 11:47:53 PM Selected scenario: charles_river
+10/03/2022 11:47:53 PM Creating instance of Image Reader object...
+10/03/2022 11:47:53 PM Start Training
+10/03/2022 11:47:53 PM Number of available images for training = 3
+10/03/2022 11:47:57 PM Training data is already available --> Loading Gaussian Mixtures
+10/03/2022 11:47:57 PM Training data is already available --> Loading trained Logistic Regression (LR) Model
+10/03/2022 11:47:57 PM Training stage is finished
+10/03/2022 11:47:58 PM Loaded backend qtagg version unknown.
+10/03/2022 11:48:06 PM Creating instance of RBC objects for Gaussian Mixture, Logistic Regression (LR) and Scaled Index models
+10/03/2022 11:48:06 PM Start Evaluation
+10/03/2022 11:48:06 PM Number of available images for evaluation = 36
