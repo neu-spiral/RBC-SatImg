@@ -76,26 +76,26 @@ class Config:
     training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5}
     # Gaussian Mixtures Model Selection
     # These values have been set after data inspection
-    gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [0, 0.2]},
+    gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [-0.05, 0.35]},
                           'oroville_dam': {'num_components': [5, 3], 'thresholds': [0.13]}}
 
     # Scaled Spectral Indices: values for their probabilistic model
-    scaled_index_model = {'mean_values': [0.25, 0.55, 0.8], 'std_values': [0.25, 0.05, 0.2]}
+    scaled_index_model = {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}
     # For the 3 classes 'charles_river' scenario, the authors propose
-    # *scaled_index_model = {'mean_values': [0.25, 0.55, 0.8], 'std_values': [0.25, 0.05, 0.2]}*
+    # *scaled_index_model = {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}*
     # TODO: Define the following case (2 classes 'oroville dam')
     # For the 2 classes 'oroville_dam' scenario, the authors propose
     # *scaled_index_model = {'mean_values': [], 'std_values': []}*
 
     # Prior probabilities
-    prior_probabilities = {'charles_river': [0.8, 0.2, 0.1],
+    prior_probabilities = {'charles_river': [0.33, 0.33, 0.33],
                            'oroville_dam': [0.5, 0.5]}
 
     # Spectral Bands used to calculate the Spectral Indices
     # For NDVI, NIR (8) and Red (4) bands are used. Used for 'Charles River' scenario by the authors.
     # For NDWI, Green (3) and NIR (8) bands are used
     # For MNDWI, Green (3) and SWIR (11) bands are used. Used for 'Oroville Dam' scenario by the authors.
-    bands_spectral_index = ['3', '11']  # band identifiers must be a string
+    bands_spectral_index = {'charles_river': ['8', '4'], 'oroville_dam': ['3', '11']}  # band identifiers must be a string
 
     # Spectral Bands
     # The main selected bands are the following
@@ -112,9 +112,15 @@ class Config:
 
     # Pixel coordinates of the images to read (dimensions)
     # TODO: Change the code so that this does not need to be hardcoded in the configuration file
-    image_dimensions = {'charles_river': {'dim_x': 43, 'dim_y': 60}, 'oroville_dam': {'dim_x': 2229, 'dim_y': 3341}}
+    image_dimensions = {'charles_river': {'dim_x': 927, 'dim_y': 2041}, 'oroville_dam': {'dim_x': 2229, 'dim_y': 3341}}
 
     # Transition Matrix
     # The transition matrix is given by the user (hardcoded in this configuration file)
     eps = 0.1
-    transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+    transition_matrix = {'oroville_dam':  np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2), 'charles_river':np.array([1 - eps, eps, eps, eps,1 - eps,eps,eps,eps,1-eps]).reshape(3,3)}
+
+    # cmap for mapping classes with colors
+    cmap = {'oroville_dam':  ['yellow','#440154'], 'charles_river': ['#440154','yellow','green']}
+
+    # enhance rgb
+    enhance = {'charles_river': 10, 'oroville_dam': 1}
