@@ -12,8 +12,8 @@ class Debug:
     related parameters to False.
 
     """
-    gmm_dump_pickle = False
-    trained_lr_model_pickle = False
+    gmm_dump_pickle = True
+    trained_lr_model_pickle = True
 
     @staticmethod
     def set_logging_file(time_now: datetime):
@@ -45,7 +45,7 @@ class Config:
     """
 
     # Paths
-    path_sentinel_images = r"C:\Users\helen\Documents\Northeastern\Project_Water_Mapping\repo\sentinel_data"
+    path_sentinel_images = r"C:\Users\HNereida\Documents\Northeastern\hd-img\Sentinel2_data"
     path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark\watnet\model\pretrained\watnet.h5")
     path_log_files = os.path.join(os.getcwd(), r"logs")
     path_training_data = os.path.join(os.getcwd(), r"training_data")
@@ -54,15 +54,16 @@ class Config:
     scenario = "oroville_dam"  # charles_river | oroville_dam
 
     # Scene selection
-    scene_id = 1  # 0 | 1 | 2
-    #   - scene_id = 0 if wanting to process the whole image (case of Charles River scenario).
+    scene_id = 3  # 0 | 1 | 2
+    #   - scene_id = 0 if wanting to process the whole image
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
+    #   - scene_id = 3 for scene C (Charles River)
 
     # Coordinates of the pixels to evaluate depending on the selected scene
     # In the case of scene_id = 0, no coordinates are specified because the whole image wants to be
     # evaluated.
-    pixel_coords_to_evaluate = {1: {'x_coords': [1700, 1900], 'y_coords': [500, 1000]}, 2: {'x_coords': [1400, 1550], 'y_coords': [1540, 1650]}}
+    pixel_coords_to_evaluate = {1: {'x_coords': [1700, 1900], 'y_coords': [500, 1000]}, 2: {'x_coords': [1400, 1550], 'y_coords': [1540, 1650]}, 3: {'x_coords': [0, 700], 'y_coords': [800, 2041]}}
 
     # Classes to evaluate
     classes = {'charles_river': ['water', 'land', 'vegetation'], 'oroville_dam': ['water', 'no water']}
@@ -72,7 +73,7 @@ class Config:
     scaling_factor_watnet = 1e-4
 
     # Training data cropping
-    training_data_crop_ratio = {'charles_river': 1, 'oroville_dam': 0.5}
+    training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5}
     # Gaussian Mixtures Model Selection
     # These values have been set after data inspection
     gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [0, 0.2]},
