@@ -129,6 +129,8 @@ class RBC:
         predict_image = self.posterior_probability.argmax(axis=1)
         y_pred = y_pred.argmax(axis=1)  # position with maximum values
 
+        return y_pred, predict_image
+
     def calculate_prediction(self, image_all_bands: np.ndarray):
         """ Returns the prior/likelihood and posterior probabilities for each evaluated model.
 
