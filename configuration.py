@@ -12,8 +12,8 @@ class Debug:
     related parameters to False.
 
     """
-    gmm_dump_pickle = True
-    trained_lr_model_pickle = True
+    gmm_dump_pickle = False
+    trained_lr_model_pickle = False
 
     @staticmethod
     def set_logging_file(time_now: datetime):

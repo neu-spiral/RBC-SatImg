@@ -40,7 +40,7 @@ def training_main(image_reader: ReadSentinel2):
 
     # Generate Gaussian Mixtures and train the Logistic Regression (LR) model
     gmm_densities = get_gmm_densities(index=labels, images=training_images)
-    trained_lr_model = get_trained_lr_model(gmm_densities=gmm_densities, images=training_images, labels=labels)
+    trained_lr_model = get_trained_lr_model(images=training_images, labels=labels)
 
     logging.debug("Training stage is finished")
     return labels, gmm_densities, trained_lr_model
@@ -186,7 +186,7 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
     return gmm_densities
 
 
-def get_trained_lr_model(images: np.ndarray, gmm_densities: List[GaussianMixture], labels: np.ndarray):
+def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
     """ Trains the Logistic Regression (LR) model with the available training images and using the generated
     Gaussian Mixture Model densities.
     - If Debug.trained_lr_model_pickle = False, the data has already been generated and stored in a pickle file.
