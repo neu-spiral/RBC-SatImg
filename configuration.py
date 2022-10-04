@@ -51,7 +51,7 @@ class Config:
     path_training_data = os.path.join(os.getcwd(), r"training_data")
 
     # Scenario selection
-    scenario = "oroville_dam"  # charles_river | oroville_dam
+    scenario = "charles_river"  # charles_river | oroville_dam
 
     # Scene selection
     scene_id = 3  # 0 | 1 | 2

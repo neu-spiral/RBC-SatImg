@@ -122,11 +122,11 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
         image_all_bands = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
 
         # Calculate and add the spectral index for all bands
-        index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index)
+        index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
         image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
 
         # Get labels from the spectral index values
-        labels = get_labels_from_index(index=index)
+        labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]))
 
         # Evaluate the 3 models for one date
         y_pred, predicted_image = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
