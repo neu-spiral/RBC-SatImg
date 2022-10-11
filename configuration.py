@@ -51,10 +51,10 @@ class Config:
     path_training_data = os.path.join(os.getcwd(), r"training_data")
 
     # Scenario selection
-    scenario = "charles_river"  # charles_river | oroville_dam
+    scenario = "oroville_dam"  # charles_river | oroville_dam
 
     # Scene selection
-    scene_id = 3  # 0 | 1 | 2
+    scene_id = 1  # 0 | 1 | 2
     #   - scene_id = 0 if wanting to process the whole image (case of Charles River scenario).
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
@@ -73,14 +73,16 @@ class Config:
     scaling_factor_watnet = 1e-4
 
     # Training data cropping
-    training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5}
+    training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.3}
     # Gaussian Mixtures Model Selection
     # These values have been set after data inspection
     gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [-0.05, 0.35]},
                           'oroville_dam': {'num_components': [5, 3], 'thresholds': [0.13]}}
 
     # Scaled Spectral Indices: values for their probabilistic model
-    scaled_index_model = {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}
+    scaled_index_model = {'charles_river': {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]},
+     'oroville_dam': {'mean_values': [-0.435, 0.565], 'std_values': [0.565,0.435]}}
+                            
     # For the 3 classes 'charles_river' scenario, the authors propose
     # *scaled_index_model = {'mean_values': [0.25, 0.55, 0.8], 'std_values': [0.25, 0.05, 0.2]}*
     # TODO: Define the following case (2 classes 'oroville dam')
