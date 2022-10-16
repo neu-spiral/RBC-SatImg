@@ -132,7 +132,7 @@ class ReadSentinel2(ImageReader):
             path_band_folder = os.path.join(path, f'Sentinel2_B{band_id}')
             path_image_band = get_path_image(path_folder=path_band_folder,
                                              image_type=Config.image_types[Config.scenario],
-                                             file_extension='.tif', image_index=image_idx)
+                                             file_extension='.tif', image_index=image_idx, band_id=band_id)
 
             # Read the corresponding band
             image_band = self.read_band(path_band=path_image_band)
