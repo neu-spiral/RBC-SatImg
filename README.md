@@ -47,7 +47,7 @@ classification.
 allows the user to read images from a dataset of Sentinel2 images, such as the one provided
 by the authors of this code.
 
-* `./training_data/` contains `pickle` files with saved data from the 
+* `./trained_models/` contains `pickle` files with saved data from the 
 training stage. If wanting to train the models from scratch, it should be indicated in 
 the `Debug` class from `configuration.py`. Data has been stored in this file because the
 training stage takes long.

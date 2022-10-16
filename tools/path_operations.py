@@ -28,7 +28,7 @@ def get_num_images_in_folder(path_folder: str, image_type: str, file_extension: 
     return file_counter
 
 
-def get_path_image(path_folder: str, image_type: str, file_extension: str, image_index: int):
+def get_path_image(path_folder: str, image_type: str, file_extension: str, image_index: int, band_id: str):
     """ Returns the path of the image stored in the folder *path_folder*, with type
     *image_type* and file extension *file_extension*. If sorting by file_name in ascending order,
     and only considering the images of the specified type and file extension, the returned
@@ -37,7 +37,7 @@ def get_path_image(path_folder: str, image_type: str, file_extension: str, image
     Parameters
     ----------
     path_folder: str
-        path of the folder where the target image is stored
+        path of the folder where the target image is stored, which depends on the band
     image_type: str
         type of the target image
     file_extension: str
@@ -56,7 +56,27 @@ def get_path_image(path_folder: str, image_type: str, file_extension: str, image
     for file_name in os.listdir(path_folder):
         if file_name.endswith(image_type + file_extension):
             if file_counter == image_index:  # the counter of images is compared to the specified image index
+                date_image = get_date_from_file_name(file_name)
+                print(f"Image with index {image_index} from date {date_image['year']}/{date_image['month']}/{date_image['day']} (band {band_id})")
                 output_path = os.path.join(path_folder, file_name)
                 break  # if the corresponding image is found, the loop is automatically stopped
             file_counter = file_counter + 1
     return output_path
+
+
+def get_date_from_file_name(file_name: str):
+    """ Returns date information from file name.
+    Parameters
+    ----------
+    file_name: str
+        type of the target image
+
+    Returns
+    -------
+    date : dict
+        date information
+
+    """
+    date_aux = file_name.split("_")[2]
+    date = {'year': date_aux[0:4], 'month': date_aux[4:6], 'day': date_aux[6:8]}
+    return date

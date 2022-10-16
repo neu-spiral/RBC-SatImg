@@ -1,0 +1,27 @@
+import pickle
+import os
+
+import matplotlib.pyplot as plt
+
+from configuration import Config
+from tools.path_operations import get_num_images_in_folder
+from figures import get_rgb_image, plot_results
+
+
+path_evaluation_images = os.path.join(Config.path_sentinel_images, Config.scenario, 'evaluation')
+path_first_band = os.path.join(path_evaluation_images, f'Sentinel2_B{Config.bands_to_read[0]}')
+num_evaluation_images = get_num_images_in_folder(path_folder=path_first_band,
+                                                 image_type=Config.image_types[Config.scenario],
+                                                 file_extension='.tif')
+
+# Each image is linked to one specific date
+for image_index in range(0, num_evaluation_images):
+
+    # Get pickle file path
+    pickle_file_path = os.path.join(Config.path_evaluation_results,
+                                    f'{Config.scenario}_{Config.scene_id}_evaluation_results_image_{image_index}.pkl')
+    # Read pickle file
+    [y_pred, predicted_image] = pickle.load(open(pickle_file_path, 'rb'))
+
+    # Plot
+    plot_results()

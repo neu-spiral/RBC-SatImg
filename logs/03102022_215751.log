@@ -1,7 +1,0 @@
-10/03/2022 09:57:51 PM Log file has been created at 2022-10-03 21:57:51.231252
-10/03/2022 09:57:51 PM Selected scenario: charles_river
-10/03/2022 09:57:51 PM Creating instance of Image Reader object...
-10/03/2022 09:57:51 PM Loaded backend qtagg version unknown.
-10/03/2022 09:58:05 PM Start Training
-10/03/2022 09:58:30 PM Number of available images for training = 3
-10/03/2022 09:58:37 PM Training data is not available --> Generating Gaussian Mixtures

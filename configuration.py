@@ -14,6 +14,7 @@ class Debug:
     """
     gmm_dump_pickle = False
     trained_lr_model_pickle = False
+    evaluation_results_pickle = False
 
     @staticmethod
     def set_logging_file(time_now: datetime):
@@ -45,16 +46,19 @@ class Config:
     """
 
     # Paths
-    path_sentinel_images = r"C:\Users\HNereida\Documents\Northeastern\hd-img\Sentinel2_data"
+    path_sentinel_images = r"C:\Users\HNereida\Documents\Northeastern\sentinel2_data_1110"
     path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark\watnet\model\pretrained\watnet.h5")
     path_log_files = os.path.join(os.getcwd(), r"logs")
-    path_training_data = os.path.join(os.getcwd(), r"training_data")
+    # path_trained_models = os.path.join(os.getcwd(), r"trained_models")
+    path_trained_models = r"C:\Users\HNereida\Documents\Northeastern\hd-img\trained_models"
+    # path_evaluation_results = os.path.join(os.getcwd(), r"evaluation_results")
+    path_evaluation_results = r"C:\Users\HNereida\Documents\Northeastern\hd-img\evaluation_results"
 
     # Scenario selection
     scenario = "charles_river"  # charles_river | oroville_dam
 
     # Scene selection
-    scene_id = 3  # 0 | 1 | 2
+    scene_id = 1  # 0 | 1 | 2
     #   - scene_id = 0 if wanting to process the whole image
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
@@ -90,6 +94,10 @@ class Config:
     # Prior probabilities
     prior_probabilities = {'charles_river': [0.33, 0.33, 0.33],
                            'oroville_dam': [0.5, 0.5]}
+
+    # Index of the images plotted for evaluation
+    # We get the index of the images to plot as a function of the scene_id
+    index_plot = {1: [5, 6, 24, 37, 40, 41], 2: [4, 11, 14, 27, 30, 32, 41], 3: [4, 6, 18, 22, 23, 31, 32]}
 
     # Spectral Bands used to calculate the Spectral Indices
     # For NDVI, NIR (8) and Red (4) bands are used. Used for 'Charles River' scenario by the authors.

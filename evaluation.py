@@ -1,10 +1,11 @@
 import logging
 import os
+import pickle
 
 import numpy as np
 
 from image_reader import ReadSentinel2
-from configuration import Config
+from configuration import Config, Debug
 from bayesian_recursive import RBC, get_rbc_objects
 from figures import plot_results
 from typing import List
@@ -16,7 +17,7 @@ from tools.spectral_index import get_broadband_index, get_labels_from_index
 from tools.path_operations import get_num_images_in_folder
 
 
-def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], time_index: int):
+def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], time_index: int, image_index: int):
     """ Returns the prior/likelihood and posterior probabilities for each evaluated model.
 
     Parameters
@@ -27,6 +28,8 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
         dictionary containing one RBC object per model to evaluate
     time_index : int
         index of the current time instant of the Bayesian process
+    imange_index : int
+        index of the current image used for evaluation (associated with one date)
 
     Returns
     -------
@@ -36,33 +39,48 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
         dictionary containing the posterior probabilities for each model
 
     """
-    # Initialize empty dictionaries with the prior and posterior probabilities
-    y_pred = {}
-    predicted_image = {}
+    # Get the relative path where the pickle file containing evaluation results
+    pickle_file_path = os.path.join(Config.path_evaluation_results, f'{Config.scenario}_{Config.scene_id}_evaluation_results_image_{image_index}.pkl')
 
-    # Reshape the image posterior probabilities
-    # Reshape the labels (*y_pred*) to compare with the image posterior probabilities
-    dim_h = Config.image_dimensions[Config.scenario]['dim_x']
-    dim_v = Config.image_dimensions[Config.scenario]['dim_y']
+    # If user does not want to skip evaluation
+    if Debug.evaluation_results_pickle:
+        logging.debug("Evaluation is not skipped")
 
-    # GMM Model
-    y_pred["GMM"], predicted_image["GMM"] = rbc_objects["GMM"].update_labels(image_all_bands=image_all_bands,
-                                                                             time_index=time_index)
-    predicted_image["GMM"] = predicted_image["GMM"].reshape(dim_h, dim_v)
-    y_pred["GMM"] = y_pred["GMM"].reshape(dim_h, dim_v)
+        # Initialize empty dictionaries with the prior and posterior probabilities
+        y_pred = {}
+        predicted_image = {}
 
-    # Scaled Index Model
-    y_pred["Scaled Index"], predicted_image["Scaled Index"] = rbc_objects["Scaled Index"].update_labels(
-        image_all_bands=image_all_bands, time_index=time_index)
-    predicted_image["Scaled Index"] = predicted_image["Scaled Index"].reshape(dim_h, dim_v)
-    y_pred["Scaled Index"] = y_pred["Scaled Index"].reshape(dim_h, dim_v)
+        # Reshape the image posterior probabilities
+        # Reshape the labels (*y_pred*) to compare with the image posterior probabilities
+        dim_h = Config.image_dimensions[Config.scenario]['dim_x']
+        dim_v = Config.image_dimensions[Config.scenario]['dim_y']
 
-    # Logistic Regression Model
-    y_pred["Logistic Regression"], predicted_image["Logistic Regression"] = rbc_objects[
-        "Logistic Regression"].update_labels(
-        image_all_bands=image_all_bands, time_index=time_index)
-    predicted_image["Logistic Regression"] = predicted_image["Logistic Regression"].reshape(dim_h, dim_v)
-    y_pred["Logistic Regression"] = y_pred["Logistic Regression"].reshape(dim_h, dim_v)
+        # GMM Model
+        y_pred["GMM"], predicted_image["GMM"] = rbc_objects["GMM"].update_labels(image_all_bands=image_all_bands,
+                                                                                 time_index=time_index)
+        predicted_image["GMM"] = predicted_image["GMM"].reshape(dim_h, dim_v)
+        y_pred["GMM"] = y_pred["GMM"].reshape(dim_h, dim_v)
+
+        # Scaled Index Model
+        y_pred["Scaled Index"], predicted_image["Scaled Index"] = rbc_objects["Scaled Index"].update_labels(
+            image_all_bands=image_all_bands, time_index=time_index)
+        predicted_image["Scaled Index"] = predicted_image["Scaled Index"].reshape(dim_h, dim_v)
+        y_pred["Scaled Index"] = y_pred["Scaled Index"].reshape(dim_h, dim_v)
+
+        # Logistic Regression Model
+        y_pred["Logistic Regression"], predicted_image["Logistic Regression"] = rbc_objects[
+            "Logistic Regression"].update_labels(
+            image_all_bands=image_all_bands, time_index=time_index)
+        predicted_image["Logistic Regression"] = predicted_image["Logistic Regression"].reshape(dim_h, dim_v)
+        y_pred["Logistic Regression"] = y_pred["Logistic Regression"].reshape(dim_h, dim_v)
+
+        # Dump data into pickle
+        pickle.dump([y_pred, predicted_image], open(pickle_file_path, 'wb'))
+
+    # If user wants to load evaluation results (to skip evaluation, as it might take long, if user just wants to plot previously saved results)
+    else:  # ~Debug.evaluation_results_pickle
+        logging.debug("Training data is already available --> Loading trained Logistic Regression (LR) Model")
+        [y_pred, predicted_image] = pickle.load(open(pickle_file_path, 'rb'))
 
     return y_pred, predicted_image
 
@@ -120,7 +138,7 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
     for image_idx in range(0, num_evaluation_images):
         # All bands of the image with index *image_idx* are stored in *image_all_bands*
         image_all_bands = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
-
+        '''
         # Calculate and add the spectral index for all bands
         index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
         image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
@@ -130,13 +148,17 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
 
         # Evaluate the 3 models for one date
         y_pred, predicted_image = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
-                                                  time_index=time_index)
-
-        # Plot Results at each Image
-        # For each Image, we have read as many bands as configured in *Config.bands_to_read*
-        # Each Image is linked to one specific Date
-        plot_results(y_pred=y_pred, predicted_image=predicted_image, labels=labels, time_index=time_index,
-                     image_all_bands=image_all_bands)
-
-        # Update the *time_index* value
-        time_index = time_index + 1
+                                                  time_index=time_index, image_index=image_idx)
+        print(f"image with image index {image_idx}")
+        condition = Config.index_plot[Config.scene_id].count(image_idx)
+        condition = True # debugging
+        if condition:
+            print(f"plotting results for image with index {image_idx}")
+            # Plot Results at each Image
+            # For each Image, we have read as many bands as configured in *Config.bands_to_read*
+            # Each Image is linked to one specific Date
+            plot_results(y_pred=y_pred, predicted_image=predicted_image, labels=labels, time_index=time_index,
+                         image_all_bands=image_all_bands)
+            # Update the *time_index* value
+            time_index = time_index + 1
+        '''

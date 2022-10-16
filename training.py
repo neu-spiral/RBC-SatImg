@@ -149,7 +149,7 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
 
     """
     # Get the relative path where the pickle file containing training data is/will be stored
-    pickle_file_path = os.path.join(Config.path_training_data, f'gmm_densities_{Config.scenario}.pkl')
+    pickle_file_path = os.path.join(Config.path_trained_models, f'gmm_densities_{Config.scenario}.pkl')
 
     # If user wants to generate training data from scratch
     if Debug.gmm_dump_pickle:
@@ -208,7 +208,7 @@ def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
 
     """
     # Get the relative path where the pickle file containing training data is/will be stored
-    pickle_file_path = os.path.join(Config.path_training_data, f'lr_trained_data_{Config.scenario}.pkl')
+    pickle_file_path = os.path.join(Config.path_trained_models, f'lr_trained_model_{Config.scenario}.pkl')
 
     # If user wants to generate training data from scratch
     if Debug.trained_lr_model_pickle:
