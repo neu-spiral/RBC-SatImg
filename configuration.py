@@ -12,9 +12,9 @@ class Debug:
     related parameters to False.
 
     """
-    gmm_dump_pickle = False
-    trained_lr_model_pickle = False
-    evaluation_results_pickle = False
+    gmm_dump_pickle = True
+    trained_lr_model_pickle = True
+    evaluation_results_pickle = True
 
     @staticmethod
     def set_logging_file(time_now: datetime):
@@ -58,7 +58,7 @@ class Config:
     scenario = "charles_river"  # charles_river | oroville_dam
 
     # Scene selection
-    scene_id = 1  # 0 | 1 | 2
+    scene_id = 3  # 0 | 1 | 2
     #   - scene_id = 0 if wanting to process the whole image
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
@@ -82,9 +82,10 @@ class Config:
     # These values have been set after data inspection
     gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [-0.05, 0.35]},
                           'oroville_dam': {'num_components': [5, 3], 'thresholds': [0.13]}}
+    # The thresholds are used to compute the scaled index model mean and std values, and also for labeling
 
     # Scaled Spectral Indices: values for their probabilistic model
-    scaled_index_model = {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}
+    scaled_index_model = {'oroville_dam': {'mean_values': [-0.435, 0.565], 'std_values': [0.565,0.435]}, 'charles_river': {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}}
     # For the 3 classes 'charles_river' scenario, the authors propose
     # *scaled_index_model = {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}*
     # TODO: Define the following case (2 classes 'oroville dam')
