@@ -44,7 +44,7 @@ def get_rgb_image(image_all_bands: np.ndarray):
     return rgb_image
 
 
-def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], predicted_image: Dict[str, np.ndarray], labels: np.ndarray, time_index: int):
+def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], predicted_image: Dict[str, np.ndarray], labels: np.ndarray, time_index: int, date_string : str):
     """ Plots evaluation results when evaluating the target models on the input image.
 
     Parameters
@@ -69,7 +69,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
     rgb_image = get_rgb_image(image_all_bands=image_all_bands)
 
     # Create figure
-    f, axarr = plt.subplots(1, 8, figsize=(23,25))
+    f, axarr = plt.subplots(1, 8, figsize=(12,4))
 
     # Define colors to use for the plots
     cmap = colors.ListedColormap(Config.cmap[Config.scenario])
@@ -123,5 +123,6 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
     f.subplots_adjust(wspace=0.1, hspace=0)
 
     # Show subplots
+    f.suptitle(date_string)
     plt.show()
     plt.close()

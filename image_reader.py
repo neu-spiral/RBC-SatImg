@@ -121,6 +121,7 @@ class ReadSentinel2(ImageReader):
             all the read bands for the image with index *image_idx*
 
         """
+        # TODO: add date_string variable to descriptions
         # Empty list
         image_all_bands = []
 
@@ -130,7 +131,7 @@ class ReadSentinel2(ImageReader):
         for band_id in Config.bands_to_read:
             # Get path of image to be read in this iteration, which depends on the image index
             path_band_folder = os.path.join(path, f'Sentinel2_B{band_id}')
-            path_image_band = get_path_image(path_folder=path_band_folder,
+            path_image_band, date_string = get_path_image(path_folder=path_band_folder,
                                              image_type=Config.image_types[Config.scenario],
                                              file_extension='.tif', image_index=image_idx, band_id=band_id)
 
@@ -145,4 +146,4 @@ class ReadSentinel2(ImageReader):
 
         # Scale images
         image_all_bands = image_all_bands * Config.scaling_factor_sentinel
-        return image_all_bands
+        return image_all_bands, date_string

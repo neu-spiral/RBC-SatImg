@@ -40,7 +40,8 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
 
     """
     # Get the relative path where the pickle file containing evaluation results
-    pickle_file_path = os.path.join(Config.path_evaluation_results, f'{Config.scenario}_{Config.scene_id}_evaluation_results_image_{image_index}.pkl')
+    pickle_file_path = os.path.join(Config.path_evaluation_results,
+                                    f'{Config.scenario}_{Config.scene_id}_evaluation_results_image_{image_index}.pkl')
 
     # If user does not want to skip evaluation
     if Debug.evaluation_results_pickle:
@@ -73,6 +74,20 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
             image_all_bands=image_all_bands, time_index=time_index)
         predicted_image["Logistic Regression"] = predicted_image["Logistic Regression"].reshape(dim_h, dim_v)
         y_pred["Logistic Regression"] = y_pred["Logistic Regression"].reshape(dim_h, dim_v)
+
+        # Benchmark Deep Learning models for the water mapping experiment
+        if Config.scenario == "oroville_dam":
+            # DeepWaterMap Algorithm
+            y_pred["DeepWaterMap"], predicted_image["DeepWaterMap"] = rbc_objects["DeepWaterMap"].update_labels(
+                image_all_bands=image_all_bands, time_index=time_index)
+            predicted_image["Logistic Regression"] = predicted_image["Logistic Regression"].reshape(dim_h, dim_v)
+            y_pred["DeepWaterMap"] = y_pred["DeepWaterMap"].reshape(dim_h, dim_v)
+
+            # WatNet Algorithm
+            y_pred["WatNet"], predicted_image["WatNet"] = rbc_objects["WatNet"].update_labels(
+                image_all_bands=image_all_bands, time_index=time_index)
+            predicted_image["WatNet"] = predicted_image["WatNet"].reshape(dim_h, dim_v)
+            y_pred["WatNet"] = y_pred["WatNet"].reshape(dim_h, dim_v)
 
         # Dump data into pickle
         pickle.dump([y_pred, predicted_image], open(pickle_file_path, 'wb'))
@@ -137,8 +152,8 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
     # Each image is linked to one specific date
     for image_idx in range(0, num_evaluation_images):
         # All bands of the image with index *image_idx* are stored in *image_all_bands*
-        image_all_bands = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
-        '''
+        image_all_bands, date_string = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
+
         # Calculate and add the spectral index for all bands
         index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
         image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
@@ -149,16 +164,16 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
         # Evaluate the 3 models for one date
         y_pred, predicted_image = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
                                                   time_index=time_index, image_index=image_idx)
+
         print(f"image with image index {image_idx}")
         condition = Config.index_plot[Config.scene_id].count(image_idx)
-        condition = True # debugging
+        condition = True  # debugging
         if condition:
             print(f"plotting results for image with index {image_idx}")
             # Plot Results at each Image
             # For each Image, we have read as many bands as configured in *Config.bands_to_read*
             # Each Image is linked to one specific Date
             plot_results(y_pred=y_pred, predicted_image=predicted_image, labels=labels, time_index=time_index,
-                         image_all_bands=image_all_bands)
+                         image_all_bands=image_all_bands, date_string=date_string)
             # Update the *time_index* value
             time_index = time_index + 1
-        '''

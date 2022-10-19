@@ -12,8 +12,8 @@ class Debug:
     related parameters to False.
 
     """
-    gmm_dump_pickle = True
-    trained_lr_model_pickle = True
+    gmm_dump_pickle = False
+    trained_lr_model_pickle = False
     evaluation_results_pickle = True
 
     @staticmethod
@@ -27,7 +27,7 @@ class Debug:
 
         """
         # Get log file path
-        file_name = time_now.strftime("%d%m%Y_%H%M%S.log")
+        file_name = time_now.strftime("%Y%m%d_%I%M%S.log")
         file_path = os.path.join(Config.path_log_files, file_name)
 
         # Set log file basic configuration
@@ -46,19 +46,19 @@ class Config:
     """
 
     # Paths
-    path_sentinel_images = r"C:\Users\HNereida\Documents\Northeastern\sentinel2_data_1110"
+    path_sentinel_images = r"/Users/helena/Documents/Sentinel2_data"
     path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark\watnet\model\pretrained\watnet.h5")
-    path_log_files = os.path.join(os.getcwd(), r"logs")
+    path_log_files = r"/Users/helena/Documents/log"
     # path_trained_models = os.path.join(os.getcwd(), r"trained_models")
-    path_trained_models = r"C:\Users\HNereida\Documents\Northeastern\hd-img\trained_models"
+    path_trained_models = r"/Users/helena/Documents/trained_models"
     # path_evaluation_results = os.path.join(os.getcwd(), r"evaluation_results")
-    path_evaluation_results = r"C:\Users\HNereida\Documents\Northeastern\hd-img\evaluation_results"
+    path_evaluation_results = r"/Users/helena/Documents/evaluation_results"
 
     # Scenario selection
-    scenario = "charles_river"  # charles_river | oroville_dam
+    scenario = "oroville_dam"  # charles_river | oroville_dam
 
     # Scene selection
-    scene_id = 3  # 0 | 1 | 2
+    scene_id = 2  # 0 | 1 | 2
     #   - scene_id = 0 if wanting to process the whole image
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
@@ -73,8 +73,8 @@ class Config:
     classes = {'charles_river': ['water', 'land', 'vegetation'], 'oroville_dam': ['water', 'no water']}
 
     # Scaling factors
-    scaling_factor_sentinel = 1e-4  # Sentinel2 image processing
-    scaling_factor_watnet = 1e-4
+    scaling_factor_sentinel = 1e-4  # Sentinel-2 image processing, used when reading a Sentinel-2 image
+    scaling_factor_watnet = 1
 
     # Training data cropping
     training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5}

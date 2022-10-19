@@ -164,9 +164,9 @@ def get_labels_from_index(index: np.ndarray, num_classes: int):
 
     """
     if num_classes == 2:
-        labels = np.transpose(index.copy())  # TODO: check if this line can be removed
-        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)  # labels under 0 are set to 0
-        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)  # labels over 0 are set to 1
+        labels = np.transpose(index.copy())
+        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)  # labels under threshold are set to 0
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)  # labels over threshold are set to 1
     elif num_classes == 3:
         labels = np.transpose(index.copy())  # TODO: check if this line can be removed
         np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)
@@ -191,13 +191,22 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
         array with calculated values of scaled spectral index
 
     """
-    # TODO: clean this function and use the scaled index model also for the 2 class case
     # TODO: remove if-else from this function
+    list_pdf_values = []
+    for i in range(num_classes):
+        list_pdf_values.append(
+            np.exp(- ((Config.scaled_index_model[Config.scenario]['mean_values'][i] - spectral_index) /
+                      Config.scaled_index_model[Config.scenario]['std_values'][i]) ** 2 / 2))
+    array_pdf_values = np.array(list_pdf_values)
+    sum_pdf_values = np.sum(array_pdf_values, axis=0)
+    scaled_index = np.divide(array_pdf_values, sum_pdf_values)
+    scaled_index = np.transpose(scaled_index)
+    '''
     if num_classes == 3:
         list_pdf_values = []
         for i in range(num_classes):
-            list_pdf_values.append(np.exp(- ((Config.scaled_index_model['mean_values'][i] - spectral_index) /
-                                             Config.scaled_index_model['std_values'][i]) ** 2 / 2))
+            list_pdf_values.append(np.exp(- ((Config.scaled_index_model[Config.scenario]['mean_values'][i] - spectral_index) /
+                                             Config.scaled_index_model[Config.scenario]['std_values'][i]) ** 2 / 2))
         array_pdf_values = np.array(list_pdf_values)
         sum_pdf_values = np.sum(array_pdf_values, axis=0)
         scaled_index = np.divide(array_pdf_values, sum_pdf_values)
@@ -207,4 +216,5 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
         probability_water = 1 - scaled_index
         probability_no_water = scaled_index
         scaled_index = np.append(probability_water, probability_no_water, axis=1)
+    '''
     return scaled_index
