@@ -1,6 +1,6 @@
 # Recursive Water and Land Mapping
 
-This code has been implemented in Python 3.6.13, using the IDE Pycharm 2021.2.3. 
+This code has been implemented in Python 3.6.
 
 ## Project Structure
 The project is structured as follows.
@@ -60,13 +60,21 @@ training stage takes long.
 
 ### Geospatial Data Abstraction Library (GDAL) Installation
 Follow these instructions to [install GDAL for Python with pip on Windows](https://opensourceoptions.com/blog/how-to-install-gdal-for-python-with-pip-on-windows/)
-or to [install GDAL for Python with Anaconda](https://opensourceoptions.com/blog/how-to-install-gdal-with-anaconda/). We recommend to create
-a conda environment with Python 3.8 and run the command `conda install -c conda-forge gdal` in the Anaconda prompt.
+or to [install GDAL for Python with Anaconda](https://opensourceoptions.com/blog/how-to-install-gdal-with-anaconda/) (compatible with Windows, Linux and macOS). We recommend to create
+a conda environment and run the command `conda install -c conda-forge gdal` in the Anaconda prompt.
 
 ### Other Packages
 There are other packages besides GDAL that need to be installed. Required packages can be installed using the Python package installer `pip`:
 
 <code>pip install -r requirements.txt</code>
+
+If a module is not recognized, we recommend to install the package separately via the following commands, as suggested in the _Installation via pip and conda_ section from [these instructions](https://scikit-image.org/docs/stable/install.html), for instance in the case of `scikit-learn`:
+
+<code>python -m pip install -U pip</code>
+
+<code>python -m pip install -U scikit-image</code>
+
+Also, check [this link](https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706) for the installation of `tensorflow` if using macOS with the M1 chip, for which we recommend using `Miniconda`.
 
 ### Dataset
 Download our dataset *Sentinel-2 Images from Oroville Dam and Charles River* from [this Zenodo link](https://zenodo.org/record/6999172#.YzWyndjMI2x) and extract the `.zip` file. 

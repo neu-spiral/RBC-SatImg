@@ -53,15 +53,16 @@ def get_path_image(path_folder: str, image_type: str, file_extension: str, image
     """
     output_path = -1  # if image with specified type, file extension and index is not found, -1 is returned
     file_counter = 0  # only images with specified type and file extension are counted
-    for file_name in os.listdir(path_folder):
+    for file_name in sorted(os.listdir(path_folder)):
         if file_name.endswith(image_type + file_extension):
             if file_counter == image_index:  # the counter of images is compared to the specified image index
                 date_image = get_date_from_file_name(file_name)
                 print(f"Image with index {image_index} from date {date_image['year']}/{date_image['month']}/{date_image['day']} (band {band_id})")
                 output_path = os.path.join(path_folder, file_name)
+                date_string = f"{date_image['year']}/{date_image['month']}/{date_image['day']}"
                 break  # if the corresponding image is found, the loop is automatically stopped
             file_counter = file_counter + 1
-    return output_path
+    return output_path, date_string
 
 
 def get_date_from_file_name(file_name: str):

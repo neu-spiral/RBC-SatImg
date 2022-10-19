@@ -39,7 +39,7 @@ def training_main(image_reader: ReadSentinel2):
     labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]))
 
     # Generate Gaussian Mixtures and train the Logistic Regression (LR) model
-    gmm_densities = get_gmm_densities(index=labels, images=training_images)
+    gmm_densities = get_gmm_densities(labels=labels, images=training_images)
     trained_lr_model = get_trained_lr_model(images=training_images, labels=labels)
 
     logging.debug("Training stage is finished")
@@ -120,7 +120,7 @@ def read_training_images(image_reader: ReadSentinel2):
     # specified in the configuration. Images/files with different type/extension are skipped
     for image_idx in range(0, num_training_images):
         # All bands of the image with index *image_idx* are stored in *image_all_bands*
-        image_all_bands = image_reader.read_image(path=path_training_images, image_idx=image_idx)
+        image_all_bands, _ = image_reader.read_image(path=path_training_images, image_idx=image_idx)
 
         # Add all the bands of the image/date that corresponds to this iteration
         training_images[image_idx * size_image: (image_idx + 1) * size_image, :] = image_all_bands
@@ -128,7 +128,7 @@ def read_training_images(image_reader: ReadSentinel2):
     return training_images
 
 
-def get_gmm_densities(images: np.ndarray, index: np.ndarray):
+def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
     """ Gets the value of the Gaussian Mixture Model densities used in the training and evaluation stages.
     - If Debug.gmm_dump_pickle = False, the data has already been generated and stored in a pickle file.
     This function therefore loads the available data.
@@ -139,8 +139,8 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
     ----------
     images : np.ndarray
         array containing the available training images
-    index : np.ndarray
-        array with the calculated spectral indexes for the bands of the training images
+    labels: np.ndarray
+        array containing each pixel label
 
     Returns
     -------
@@ -148,13 +148,12 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
         returns the trained Gaussian Mixture Model densities in a list
 
     """
-    # Get the relative path where the pickle file containing training data is/will be stored
     pickle_file_path = os.path.join(Config.path_trained_models, f'gmm_densities_{Config.scenario}.pkl')
 
     # If user wants to generate training data from scratch
     if Debug.gmm_dump_pickle:
 
-        logging.debug("Training data is not available --> Generating Gaussian Mixtures")
+        logging.debug("Trained model is not available --> Generating Gaussian Mixtures")
 
         # Set empty list where the calculated densities will be stored
         gmm_densities = []
@@ -171,14 +170,14 @@ def get_gmm_densities(images: np.ndarray, index: np.ndarray):
             # Cut the number of pixels used for training if the code execution is too slow
             # by using the parameter *Config.training_data_crop*
             gmm_densities.append(GaussianMixture(n_components=num_components).fit(
-                images[index==class_idx, :-1][0:int(Config.training_data_crop_ratio[Config.scenario] * images.shape[0])]))
+                images[labels==class_idx, :-1][0:int(Config.training_data_crop_ratio[Config.scenario] * images.shape[0])]))
 
         # Dump data into pickle
         pickle.dump(gmm_densities, open(pickle_file_path, 'wb'))
 
     # If user wants to load training data that has already been generated
     else:  # if ~Debug.gmm_dump_pickle
-        logging.debug("Training data is already available --> Loading Gaussian Mixtures")
+        logging.debug("Trained model is already available --> Loading trained Gaussian Mixture Model (GMM)")
 
         # The GMM densities have already been computed and stored in a pickle file,
         # so it is not needed to calculate them again. They can be directly read.
@@ -198,8 +197,8 @@ def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
     ----------
     images : np.ndarray
         array containing the available training images
-    gmm_densities: List[GaussianMixture]
-        list containing the trained Gaussian Mixture Model densities
+    labels : np.ndarray
+        array containing each pixel label
 
     Returns
     -------
@@ -212,7 +211,7 @@ def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
 
     # If user wants to generate training data from scratch
     if Debug.trained_lr_model_pickle:
-        logging.debug("Training data is not available --> Training Logistic Regression (LR) Model")
+        logging.debug("Trained model is not available --> Training Logistic Regression (LR) Model")
         # Train Logistic Regression (LR) model
         # The last column of the images array is not processed because it contains the spectral index values
         """
@@ -220,13 +219,13 @@ def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
                                          classes=Config.classes[
                                              Config.scenario])  # only used for training the LR
         """
-        trained_lr_model = LogisticRegression().fit(X=images[:, :-1], y= labels)
+        trained_lr_model = LogisticRegression().fit(X=images[:, :-1], y=labels)
 
         # Dump data into pickle
         pickle.dump(trained_lr_model, open(pickle_file_path, 'wb'))
 
     # If user wants to load training data that has already been generated
     else:  # ~Debug.trained_lr_model_pickle
-        logging.debug("Training data is already available --> Loading trained Logistic Regression (LR) Model")
+        logging.debug("Trained model is already available --> Loading trained Logistic Regression (LR) Model")
         trained_lr_model = pickle.load(open(pickle_file_path, 'rb'))
     return trained_lr_model

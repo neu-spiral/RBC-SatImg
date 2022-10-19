@@ -6,6 +6,7 @@ from typing import List, Dict
 from sklearn.mixture import GaussianMixture
 from configuration import Config
 from benchmark.benchmark import main_deepwater
+from benchmark.watnet import watnet_infer
 from tools.spectral_index import get_broadband_index, get_scaled_index
 from tools.operations import get_index_pixels_of_interest
 from sklearn.linear_model import LogisticRegression
@@ -104,7 +105,7 @@ class RBC:
         # Later, this array is updated analysing only the pixels in the subscene
         self.posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
 
-        # TODO: This Bhavya added to avoid a dimensional error, but should be changed
+        # TODO: This line was added to avoid a dimensional error, but it should be checked whether it could be removed
         if np.ndim(y_pred) == 3:
             y_pred = y_pred.reshape(self.total_num_pixels, self.num_classes)
 
@@ -230,7 +231,6 @@ class RBC:
             array containing the posterior probability for each class
 
         """
-        # TODO: review the maths in this function
         # Posterior probability is calculated here. eq1.
         # self.classes_prior[ct_p] = marginal probability
         post_return = np.zeros(shape=[self.num_classes, self.num_classes])
@@ -306,6 +306,20 @@ def get_rbc_objects(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
                                              gmm_densities=gmm_densities, classes_prior=classes_prior,
                                              model="Logistic Regression")
     rbc_objects["Logistic Regression"].set_lr_trained_model(trained_model=trained_lr_model)
+
+    # Benchmark Deep Learning models for the water mapping experiment
+    if Config.scenario == "oroville_dam":
+        # RBC object for DeepWaterMap algorithm
+        rbc_objects["DeepWaterMap"] = RBC(transition_matrix=transition_matrix, classes=classes,
+                                                 gmm_densities=gmm_densities, classes_prior=classes_prior,
+                                                 model="DeepWaterMap")
+        rbc_objects["DeepWaterMap"].set_lr_trained_model(trained_model=trained_lr_model)
+
+        # RBC object for WatNet algorithm
+        rbc_objects["WatNet"] = RBC(transition_matrix=transition_matrix, classes=classes,
+                                                 gmm_densities=gmm_densities, classes_prior=classes_prior,
+                                                 model="WatNet")
+        rbc_objects["WatNet"].set_lr_trained_model(trained_model=trained_lr_model)
 
     # Returns the dictionary with type Dict[RBC]
     return rbc_objects
