@@ -1,6 +1,15 @@
-# Recursive Water and Land Mapping
+# Recursive classification of satellite imaging time series: An application to water and land cover mapping
 
-This code has been implemented in Python 3.6.
+This code has been implemented in Python 3.6. The performance of three static classification algorithms and their recursive versions is compared, including a Gaussian Mixture Model (GMM), Logistic Regression (LR) and Spectral Index Classifiers (SICs).
+
+## Study Area
+The first experiment considers water mapping of an embankment dam in California, with one training region and two study areas for evaluation (see the following figure).
+
+<img alt="Study Area Water Mapping" src="figures/study_area_water_mapping.png" width="500"/>
+
+The second experiment considers land cover classification of the Charles river basin in Boston, with matching training and evaluation regions (see the following figure).
+
+<img alt="Study Area Land Cover Classification" src="figures/study_area_land_use_land_cover.png" width="500"/>
 
 ## Project Structure
 The project is structured as follows.
@@ -81,12 +90,10 @@ Download our dataset *Sentinel-2 Images from Oroville Dam and Charles River* fro
 In `configuration.py` (class `Config`), change `path_sentinel_images` to the `sentinel_data` folder path. Images in this dataset are used for
 training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
-### Reproduction of Results
-The results presented in our publication can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)).
-
 ## Results
-A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) everytime the main scripts are executed. Log files contain information
-regarding evenets in the code execution.
+The results presented in our publication can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) everytime the main scripts are executed. Log files contain information
+regarding events in the code execution.
+
 
 ## References
 

@@ -80,7 +80,7 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
             # DeepWaterMap Algorithm
             y_pred["DeepWaterMap"], predicted_image["DeepWaterMap"] = rbc_objects["DeepWaterMap"].update_labels(
                 image_all_bands=image_all_bands, time_index=time_index)
-            predicted_image["Logistic Regression"] = predicted_image["Logistic Regression"].reshape(dim_h, dim_v)
+            predicted_image["DeepWaterMap"] = predicted_image["DeepWaterMap"].reshape(dim_h, dim_v)
             y_pred["DeepWaterMap"] = y_pred["DeepWaterMap"].reshape(dim_h, dim_v)
 
             # WatNet Algorithm
@@ -154,26 +154,25 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
         # All bands of the image with index *image_idx* are stored in *image_all_bands*
         image_all_bands, date_string = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
 
-        # Calculate and add the spectral index for all bands
-        index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
-        image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
+        if not Debug.check_dates:
+            # Calculate and add the spectral index for all bands
+            index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
+            image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
 
-        # Get labels from the spectral index values
-        labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]))
+            # Get labels from the spectral index values
+            labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]))
 
-        # Evaluate the 3 models for one date
-        y_pred, predicted_image = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
-                                                  time_index=time_index, image_index=image_idx)
+            # Evaluate the 3 models for one date
+            y_pred, predicted_image = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
+                                                      time_index=time_index, image_index=image_idx)
 
-        print(f"image with image index {image_idx}")
-        condition = Config.index_plot[Config.scene_id].count(image_idx)
-        condition = True  # debugging
-        if condition:
+            # Plot results for this image
             print(f"plotting results for image with index {image_idx}")
             # Plot Results at each Image
             # For each Image, we have read as many bands as configured in *Config.bands_to_read*
             # Each Image is linked to one specific Date
             plot_results(y_pred=y_pred, predicted_image=predicted_image, labels=labels, time_index=time_index,
-                         image_all_bands=image_all_bands, date_string=date_string)
+                         image_all_bands=image_all_bands, date_string=date_string, image_idx=image_idx)
             # Update the *time_index* value
             time_index = time_index + 1
+

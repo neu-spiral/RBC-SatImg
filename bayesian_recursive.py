@@ -6,7 +6,7 @@ from typing import List, Dict
 from sklearn.mixture import GaussianMixture
 from configuration import Config
 from benchmark.benchmark import main_deepwater
-from benchmark.watnet import watnet_infer
+from benchmark.watnet.watnet_infer import watnet_infer_main
 from tools.spectral_index import get_broadband_index, get_scaled_index
 from tools.operations import get_index_pixels_of_interest
 from sklearn.linear_model import LogisticRegression
@@ -50,6 +50,7 @@ class RBC:
         self.num_classes = len(classes)
         self.model = model
         self.densities = gmm_densities
+        print(f"model name {self.model} and transition probability matrix is {self.transition_matrix}")
 
     @classmethod
     def set_lr_trained_model(cls, trained_model: LogisticRegression):
@@ -157,7 +158,7 @@ class RBC:
             y_pred = scaled_index
 
         # DeepWaterNet Model, used in this project for benchmarking
-        elif self.model == "deepwaternet":  # first version
+        elif self.model == "DeepWaterMap":  # first version
 
             # Select only the bands used in the case of this algorithm
             image_deepwaternet_bands = image_all_bands[:, Config.bands_deepwaternet].reshape(
@@ -169,13 +170,13 @@ class RBC:
                 np.clip(image_deepwaternet_bands * Config.scaling_factor_watnet, a_min=0, a_max=1))
 
             # The model published by the authors is called within the main_deepwater function
-            water_map = main_deepwater(image_path=image_deepwaternet_bands)
+            water_map = main_deepwater(checkpoint_path=Config.path_checkpoint_deepwatermap, image=image_deepwaternet_bands)
             water_map = water_map.reshape(-1, 1)
-            y_pred = np.concatenate((1 - water_map, water_map), axis=1)
+            y_pred = np.concatenate((water_map, 1-water_map), axis=1)
 
         # WatNet Model, used in this project for benchmarking
         # The WatNet model is an improved version of the DeepWaterNet model provided by their authors
-        elif self.model == "watnet":
+        elif self.model == "WatNet":
 
             # Select only the bands used in the case of this algorithm
             image_watnet_bands = image_all_bands[:, Config.bands_watnet].reshape(
@@ -187,9 +188,9 @@ class RBC:
                 np.clip(image_watnet_bands * Config.scaling_factor_watnet, a_min=0, a_max=1))
 
             # The model published by the authors is called within the watnet_infer function
-            water_map = watnet_infer(rsimg=image_watnet_bands,
-                                     path_model='E:/Github/New_all/model/pretrained/watnet.h5').reshape(-1, 1)
-            y_pred = np.concatenate((1 - water_map, water_map), axis=1)
+            water_map = watnet_infer_main(rsimg=image_watnet_bands,
+                                     path_model=Config.path_watnet_pretrained_model).reshape(-1, 1)
+            y_pred = np.concatenate((water_map, 1-water_map), axis=1)
 
         # Logistic Regression Model
         elif self.model == "Logistic Regression":
@@ -199,7 +200,7 @@ class RBC:
             y_pred = self.trained_model.predict_proba(image_all_bands[:, :-1])
 
         # GMMs Model
-        else:  # self.model == "GMM"
+        elif self.model == "GMM":
             y_pred = np.zeros(shape=[self.total_num_pixels, self.num_classes])
             # Calculate the likelihood for each Gaussian Mixture
             # the score_samples function takes into account all the rows

@@ -15,6 +15,9 @@ class Debug:
     gmm_dump_pickle = False
     trained_lr_model_pickle = False
     evaluation_results_pickle = True
+    save_figures = True
+    check_dates = False # If true, we do not evaluate, just check the dates of evaluated images (debugging purposes)
+    pickle_sensitivity = True
 
     @staticmethod
     def set_logging_file(time_now: datetime):
@@ -46,19 +49,22 @@ class Config:
     """
 
     # Paths
+    path_zenodo = r"/Users/helena/Documents"
+    path_figures = os.path.join(path_zenodo, 'figures')
     path_sentinel_images = r"/Users/helena/Documents/Sentinel2_data"
-    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark\watnet\model\pretrained\watnet.h5")
+    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark/watnet/model/pretrained/watnet.h5")
     path_log_files = r"/Users/helena/Documents/log"
     # path_trained_models = os.path.join(os.getcwd(), r"trained_models")
     path_trained_models = r"/Users/helena/Documents/trained_models"
     # path_evaluation_results = os.path.join(os.getcwd(), r"evaluation_results")
     path_evaluation_results = r"/Users/helena/Documents/evaluation_results"
+    path_checkpoint_deepwatermap = r"/Users/helena/Documents/checkpoints_deepwatermap/cp.135.ckpt"
 
     # Scenario selection
-    scenario = "oroville_dam"  # charles_river | oroville_dam
+    scenario = "charles_river"  # charles_river | oroville_dam
 
     # Scene selection
-    scene_id = 2  # 0 | 1 | 2
+    scene_id = 3  # 0 | 1 | 2 | 3
     #   - scene_id = 0 if wanting to process the whole image
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
@@ -98,7 +104,7 @@ class Config:
 
     # Index of the images plotted for evaluation
     # We get the index of the images to plot as a function of the scene_id
-    index_plot = {1: [5, 6, 24, 37, 40, 41], 2: [4, 11, 14, 27, 30, 32, 41], 3: [4, 6, 18, 22, 23, 31, 32]}
+    index_plot = {2: [2, 9, 12, 25, 28, 30, 39], 1: [3, 4, 22, 35, 38, 39], 3: [3,5,10,14,15,23,24]}
 
     # Spectral Bands used to calculate the Spectral Indices
     # For NDVI, NIR (8) and Red (4) bands are used. Used for 'Charles River' scenario by the authors.
