@@ -59,7 +59,7 @@ def get_path_image(path_folder: str, image_type: str, file_extension: str, image
                 date_image = get_date_from_file_name(file_name)
                 print(f"Image with index {image_index} from date {date_image['year']}/{date_image['month']}/{date_image['day']} (band {band_id})")
                 output_path = os.path.join(path_folder, file_name)
-                date_string = f"{date_image['year']}/{date_image['month']}/{date_image['day']}"
+                date_string = f"{date_image['year']}-{date_image['month']}-{date_image['day']}"
                 break  # if the corresponding image is found, the loop is automatically stopped
             file_counter = file_counter + 1
     return output_path, date_string

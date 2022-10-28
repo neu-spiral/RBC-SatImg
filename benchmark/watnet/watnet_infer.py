@@ -46,7 +46,7 @@ def get_args():
     return parser.parse_args()
 
 
-def watnet_infer(rsimg, path_model = path_watnet):
+def watnet_infer_main(rsimg, path_model = path_watnet):
 
     ''' des: surface water mapping by using pretrained watnet
         arg:
