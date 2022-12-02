@@ -64,9 +64,9 @@ class Config:
     path_zenodo = r"/Users/helena/Documents/RBC-SatImg"  # TODO: CHANGE
     path_evaluation_results = os.path.join(path_zenodo, "evaluation_results")
     path_sentinel_images = os.path.join(path_zenodo, "Sentinel2_data")
-    path_results_figures = os.path.join(os.getcwd(), 'results_figures')
+    path_results_figures = os.path.join(path_zenodo, 'results_figures')
     path_watnet_pretrained_model = os.path.join(os.getcwd(), r"baseline_models/watnet/model/pretrained/watnet.h5")
-    path_log_files = os.path.join(os.getcwd(), 'log')
+    path_log_files = os.path.join(path_zenodo, 'log')
     path_trained_models = os.path.join(os.getcwd(), "trained_models")
     # TODO: Download deepwatermap checkpoints file and store in the path 'path_checkpoints_deepwatermap'
     path_checkpoints_deepwatermap = r"/Users/helena/Documents/checkpoints_deepwatermap/cp.135.ckpt"  # CHANGE
