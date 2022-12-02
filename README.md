@@ -9,7 +9,7 @@ The first experiment considers water mapping of an embankment dam in California,
 
 The second experiment considers land cover classification of the Charles river basin in Boston, with matching training and evaluation regions (see the following figure).
 
-<img alt="Study Area Land Cover Classification" src="figures/study_area_land_use_land_cover.png" width="500"/>
+<img alt="Study Area Land Cover Classification" src="figures/study_area_land_cover.png" width="500"/>
 
 ## Project Structure
 The project is structured as follows.
@@ -108,7 +108,12 @@ Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is propo
 [An applicable and automatic method for earth surface water mapping based on multispectral images](https://www.sciencedirect.com/science/article/pii/S0303243421001793).
 
 ## Authors
-* Bhavya Duvvuri, from The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
+* Helena Calatrava, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+Northeastern University, Boston (MA). Contact: helena.calat@gmail.com
+* Bhavya Duvvuri, The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
 University, Boston (MA).
-* Helena Calatrava, from the Signal Processing, Imaging, Reasoning and Learning (SPIRAL) Group also at 
-Northeastern University, Boston (MA). 
+* Haoqing Li, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+Northeastern University, Boston (MA).
+* Ricardo Borsoi, CRAN, University of Lorraine, CNRS, Vandoeuvre-les-Nancy, F-54000, France.
+* Tales Imbiariba, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+Northeastern University, Boston (MA).
