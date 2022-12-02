@@ -17,8 +17,8 @@ class Debug:
     # TODO: Change as desired
     evaluation_results_pickle = False  # False if wanting to skip evaluation
     # If evaluation is skipped, previously stored evaluation plot_results are plotted
-    # This option can be used to obtain the figures shown in the manuscript
-    save_figures = True  # True if wanting to save figures with evaluation plot_results
+    # This option can be used to obtain the readme_figures shown in the manuscript
+    save_figures = True  # True if wanting to save readme_figures with evaluation plot_results
     check_dates = False  # If True, we do not evaluate, just check the dates of evaluated images (debugging)
     pickle_sensitivity = False  # True if wanting to perform sensitivity analysis
     pickle_histogram = False  # True if wanting to store plot_results for histogram analysis
@@ -61,13 +61,13 @@ class Config:
 
     # Paths
     # TODO: Download folder from Zenodo and store it in the path 'path_zenodo'
-    path_zenodo = r"/Users/helena/Documents/RBC-SatImg"  # CHANGE
-    path_figures = os.path.join(path_zenodo, 'figures')
-    path_sentinel_images = os.path.join(path_zenodo, "Sentinel2_data")
-    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"baseline_models/watnet/model/pretrained/watnet.h5")
-    path_log_files = os.path.join(path_zenodo, 'log')
-    path_trained_models = os.path.join(path_zenodo, "trained_models")
+    path_zenodo = r"/Users/helena/Documents/RBC-SatImg"  # TODO: CHANGE
     path_evaluation_results = os.path.join(path_zenodo, "evaluation_results")
+    path_sentinel_images = os.path.join(path_zenodo, "Sentinel2_data")
+    path_results_figures = os.path.join(os.getcwd(), 'results_figures')
+    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"baseline_models/watnet/model/pretrained/watnet.h5")
+    path_log_files = os.path.join(os.getcwd(), 'log')
+    path_trained_models = os.path.join(os.getcwd(), "trained_models")
     # TODO: Download deepwatermap checkpoints file and store in the path 'path_checkpoints_deepwatermap'
     path_checkpoints_deepwatermap = r"/Users/helena/Documents/checkpoints_deepwatermap/cp.135.ckpt"  # CHANGE
 

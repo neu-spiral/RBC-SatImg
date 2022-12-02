@@ -5,11 +5,11 @@ This code has been implemented in Python 3.9. The performance of three static cl
 ## Study Area
 The first experiment considers water mapping of an embankment dam in California, with one training region and two study areas for evaluation (see the following figure).
 
-<img alt="Study Area Water Mapping" src="figures/study_area_water_mapping.png" width="500"/>
+<img alt="Study Area Water Mapping" src="readme_figures/study_area_water_mapping.png" width="500"/>
 
 The second experiment considers land cover classification of the Charles river basin in Boston, with matching training and evaluation regions (see the following figure).
 
-<img alt="Study Area Land Cover Classification" src="figures/study_area_land_use_land_cover.png" width="500"/>
+<img alt="Study Area Land Cover Classification" src="readme_figures/study_area_land_cover.png" width="500"/>
 
 ## Project Structure
 The project is structured as follows.
@@ -57,6 +57,12 @@ by the authors of this code.
 
 * `evaluation.py` contains functions used in the evaluation stage.
 
+* `./trained_models/` contains `pickle` files with saved data from the   
+training stage. If wanting to train the models from scratch, it should be indicated in   
+the `Config` class from `configuration.py`. Data has been stored in this file because the  
+training stage execution time is long.
+* `./log/` includes a log file per code execution with a description of observed events. This path can be changed in the configuration file.
+* `./results_figures/` default path for saved images with evaluation results. This path can be changed in the configuration file.
 ## Installation
 
 ### Geospatial Data Abstraction Library (GDAL) Installation
@@ -83,9 +89,9 @@ In `configuration.py` (class `Config`), change `path_zenodo` to the path where t
 training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
 ## Results
-Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). For instance, results presented in the manuscript for Study Area C are the ones presented in the following image.
+Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). The Zenodo folder provided by the authors contains the corresponding pickle files to be read so that results from the manuscript can be reproduced (see the `./evaluation_results/` folder from the Zenodo link) without the need to go through the training and evaluation stages. For instance, results presented in the manuscript for Study Area C are the ones presented in the following image.
 
-<img alt="Results Study Area C" src="figures/results_study_area_C.png" width="700"/>
+<img alt="Results Study Area C" src="readme_figures/results_study_area_C.png" width="700"/>
 
 If using Jupyter Notebook, we recommend to use it in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) for every execution of the main script. Log files contain information
 regarding events in the code execution.
@@ -108,7 +114,12 @@ Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is propo
 [An applicable and automatic method for earth surface water mapping based on multispectral images](https://www.sciencedirect.com/science/article/pii/S0303243421001793).
 
 ## Authors
-* Bhavya Duvvuri, from The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
+* Helena Calatrava, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+Northeastern University, Boston (MA). Contact: helena.calat@gmail.com
+* Bhavya Duvvuri, The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
 University, Boston (MA).
-* Helena Calatrava, from the Signal Processing, Imaging, Reasoning and Learning (SPIRAL) Group also at 
-Northeastern University, Boston (MA). 
+* Haoqing Li, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+Northeastern University, Boston (MA).
+* Ricardo Borsoi, CRAN, University of Lorraine, CNRS, Vandoeuvre-les-Nancy, F-54000, France.
+* Tales Imbiariba, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+Northeastern University, Boston (MA).
