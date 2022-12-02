@@ -61,8 +61,6 @@ by the authors of this code.
 training stage. If wanting to train the models from scratch, it should be indicated in   
 the `Config` class from `configuration.py`. Data has been stored in this file because the  
 training stage execution time is long.
-* `./log/` includes a log file per code execution with a description of observed events. This path can be changed in the configuration file.
-* `./results_figures/` default path for saved images with evaluation results. This path can be changed in the configuration file.
 ## Installation
 
 ### Geospatial Data Abstraction Library (GDAL) Installation
