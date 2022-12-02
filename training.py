@@ -130,9 +130,9 @@ def read_training_images(image_reader: ReadSentinel2):
 
 def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
     """ Gets the value of the Gaussian Mixture Model densities used in the training and evaluation stages.
-    - If Debug.gmm_dump_pickle = False, the data has already been generated and stored in a pickle file.
+    - If Config.gmm_dump_pickle = False, the data has already been generated and stored in a pickle file.
     This function therefore loads the available data.
-    - If Debug.gmm_dump_pickle = True, the data is generated from scratch in this function. After, it is
+    - If Config.gmm_dump_pickle = True, the data is generated from scratch in this function. After, it is
     stored in a pickle file.
 
     Parameters
@@ -151,7 +151,7 @@ def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
     pickle_file_path = os.path.join(Config.path_trained_models, f'gmm_densities_{Config.scenario}.pkl')
 
     # If user wants to generate training data from scratch
-    if Debug.gmm_dump_pickle:
+    if Config.gmm_dump_pickle:
 
         logging.debug("Trained model is not available --> Generating Gaussian Mixtures")
 
@@ -176,7 +176,7 @@ def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
         pickle.dump(gmm_densities, open(pickle_file_path, 'wb'))
 
     # If user wants to load training data that has already been generated
-    else:  # if ~Debug.gmm_dump_pickle
+    else:  # if ~Config.gmm_dump_pickle
         logging.debug("Trained model is already available --> Loading trained Gaussian Mixture Model (GMM)")
 
         # The GMM densities have already been computed and stored in a pickle file,
@@ -188,9 +188,9 @@ def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
 def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
     """ Trains the Logistic Regression (LR) model with the available training images and using the generated
     Gaussian Mixture Model densities.
-    - If Debug.trained_lr_model_pickle = False, the data has already been generated and stored in a pickle file.
+    - If Config.trained_lr_model_pickle = False, the data has already been generated and stored in a pickle file.
     This function therefore loads the available data.
-    - If Debug.trained_lr_model_pickle = True, the data is generated from scratch in this function. After, it is
+    - If Config.trained_lr_model_pickle = True, the data is generated from scratch in this function. After, it is
     stored in a pickle file.
 
     Parameters
@@ -210,7 +210,7 @@ def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
     pickle_file_path = os.path.join(Config.path_trained_models, f'lr_trained_model_{Config.scenario}.pkl')
 
     # If user wants to generate training data from scratch
-    if Debug.trained_lr_model_pickle:
+    if Config.trained_lr_model_pickle:
         logging.debug("Trained model is not available --> Training Logistic Regression (LR) Model")
         # Train Logistic Regression (LR) model
         # The last column of the images array is not processed because it contains the spectral index values
@@ -225,7 +225,7 @@ def get_trained_lr_model(images: np.ndarray, labels: np.ndarray):
         pickle.dump(trained_lr_model, open(pickle_file_path, 'wb'))
 
     # If user wants to load training data that has already been generated
-    else:  # ~Debug.trained_lr_model_pickle
+    else:  # ~Config.trained_lr_model_pickle
         logging.debug("Trained model is already available --> Loading trained Logistic Regression (LR) Model")
         trained_lr_model = pickle.load(open(pickle_file_path, 'rb'))
     return trained_lr_model

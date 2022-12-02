@@ -1,6 +1,6 @@
 # Recursive classification of satellite imaging time series: An application to water and land cover mapping
 
-This code has been implemented in Python 3.6. The performance of three static classification algorithms and their recursive versions is compared, including a Gaussian Mixture Model (GMM), Logistic Regression (LR) and Spectral Index Classifiers (SICs).
+This code has been implemented in Python 3.9. The performance of three static classification algorithms and their recursive versions is compared, including a Gaussian Mixture Model (GMM), Logistic Regression (LR) and Spectral Index Classifiers (SICs).
 
 ## Study Area
 The first experiment considers water mapping of an embankment dam in California, with one training region and two study areas for evaluation (see the following figure).
@@ -18,22 +18,19 @@ The project is structured as follows.
 
 * `requirements.txt`
 
-* `./benchmark/`
+* `./baseline_models/`
 
     * `./deepwatermap_main/` contains part of the deepwatermap algorithm open 
 source code shared in [this GitHub repository](https://github.com/isikdogan/deepwatermap). An `__init__.py`
 file has been added to this directory to treat it as a module.
     
     * `./watnet/` contains part of the WatNet algorithm open source code shared 
-in [this GitHub repository](https://github.com/xinluo2018/WatNet). An `__init__.py`
-file has been added to this directory to treat it as a module.
+in [this GitHub repository](https://github.com/xinluo2018/WatNet).
 
     * `benchmark.py` includes a copy of two functions from
-`./deepwatermap_main/inference.py`. The `main` function contains one change.
+`./deepwatermap_main/inference.py`. The `main` function has been changed with respect to the original one.
 
-* `./logs/` contains the `log` files generated at every code execution.
-
-* `./tools/` contains useful functions.
+* `./tools/` contains scripts which provide useful functions.
     
     * `operations.py`
 
@@ -50,20 +47,15 @@ authors.
 * `bayesian_recursive.py` contains the core of the recursive bayesian algorithm for 
 classification.
 
-* `figures.py` includes functions to plot the generated results.
+* `./plot_results/` contains scripts that can be executed to plot evaluation results. Results presented in the manuscript can be reproduced by using these files.
 
 * `image_reader.py` contains the abstract class `ImageReader` and the class `ReadSentinel2` which
 allows the user to read images from a dataset of Sentinel2 images, such as the one provided
 by the authors of this code.
 
-* `./trained_models/` contains `pickle` files with saved data from the 
-training stage. If wanting to train the models from scratch, it should be indicated in 
-the `Debug` class from `configuration.py`. Data has been stored in this file because the
-training stage takes long.
+* `training.py` contains functions used in the training stage.
 
-* `training.py` contains functions that are linked to the training stage.
-
-* `evaluation.py` contains functions that are linked to the evaluation stage.
+* `evaluation.py` contains functions used in the evaluation stage.
 
 ## Installation
 
@@ -73,7 +65,7 @@ or to [install GDAL for Python with Anaconda](https://opensourceoptions.com/blog
 a conda environment and run the command `conda install -c conda-forge gdal` in the Anaconda prompt.
 
 ### Other Packages
-There are other packages besides GDAL that need to be installed. Required packages can be installed using the Python package installer `pip`:
+There are other packages besides GDAL that need to be installed. Required packages can be installed using the Python package installer `pip`. Run the following command from the repository main folder:
 
 <code>pip install -r requirements.txt</code>
 
@@ -87,13 +79,16 @@ Also, check [this link](https://caffeinedev.medium.com/how-to-install-tensorflow
 
 ### Dataset
 Download our dataset *Sentinel-2 Images from Oroville Dam and Charles River* from [this Zenodo link](https://zenodo.org/record/6999172#.YzWyndjMI2x) and extract the `.zip` file. 
-In `configuration.py` (class `Config`), change `path_sentinel_images` to the `sentinel_data` folder path. Images in this dataset are used for
+In `configuration.py` (class `Config`), change `path_zenodo` to the path where the Zenodo folder has been stored. Images in this dataset are used for
 training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
 ## Results
-The results presented in our publication can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) everytime the main scripts are executed. Log files contain information
-regarding events in the code execution.
+Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). For instance, results presented in the manuscript for Study Area C are the ones presented in the following image.
 
+<img alt="Results Study Area C" src="figures/results_study_area_C.png" width="900"/>
+
+If using Jupyter Notebook, we recommend to use it in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) for every execution of the main script. Log files contain information
+regarding events in the code execution.
 
 ## References
 

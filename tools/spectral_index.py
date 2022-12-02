@@ -48,6 +48,7 @@ def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     return positions[0]
 '''
 
+
 def get_num_images_in_folder(path_folder: str, image_type: str, file_extension: str):
     """ Returns the number of images with type *image_type* and file extension *file_extension*
     in the folder with path *path_folder*.
@@ -165,8 +166,10 @@ def get_labels_from_index(index: np.ndarray, num_classes: int):
     """
     if num_classes == 2:
         labels = np.transpose(index.copy())
-        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)  # labels under threshold are set to 0
-        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)  # labels over threshold are set to 1
+        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0],
+                 0)  # labels under threshold are set to 0
+        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0],
+                 1)  # labels over threshold are set to 1
     elif num_classes == 3:
         labels = np.transpose(index.copy())  # TODO: check if this line can be removed
         np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)
@@ -191,12 +194,13 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
         array with calculated values of scaled spectral index
 
     """
-    # TODO: remove if-else from this function
+    # Get mean and standard deviation values for the Scaled Index Model with this configuration
+    mean_values, std_values = get_mean_std_scaled_index_model(Config.gm_model_selection[Config.scenario]['thresholds'])
+
     list_pdf_values = []
     for i in range(num_classes):
         list_pdf_values.append(
-            np.exp(- ((Config.scaled_index_model[Config.scenario]['mean_values'][i] - spectral_index) /
-                      Config.scaled_index_model[Config.scenario]['std_values'][i]) ** 2 / 2))
+            np.exp(- ((mean_values[i] - spectral_index) / std_values[i]) ** 2 / 2))
     array_pdf_values = np.array(list_pdf_values)
     sum_pdf_values = np.sum(array_pdf_values, axis=0)
     scaled_index = np.divide(array_pdf_values, sum_pdf_values)
@@ -218,3 +222,40 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
         scaled_index = np.append(probability_water, probability_no_water, axis=1)
     '''
     return scaled_index
+
+
+def get_mean_std_scaled_index_model(thresholds: list):
+    """ Given the threshold values, computes the scaled index model mean and standard deviation values.
+
+    Parameters
+    ----------
+    thresholds : list
+        includes the thresholds used for the GMM, which are also used to compute the mean and std values of the scaled index model.
+
+    Returns
+    -------
+    mean_values : list
+        includes the mean values used to build the scaled index model
+    std_values : list
+         includes the standard deviation values used to build the scaled index model
+
+    """
+    num_gaussians = len(thresholds) + 1
+
+    # Init lists with mean and standard deviation values
+    mean_values = []
+    std_values = []
+
+    # Add -1 and +1 threshold
+    thresholds_with_limits = [-1]
+    for threshold_i in thresholds:
+        thresholds_with_limits.append(threshold_i)
+    thresholds_with_limits.append(1)
+
+    # Loop through thresholds
+    for gaussian_i in range(1, num_gaussians + 1):
+        mean_values.append((thresholds_with_limits[gaussian_i] - thresholds_with_limits[gaussian_i - 1]) / 2 +
+                           thresholds_with_limits[gaussian_i - 1])
+        std_values.append((thresholds_with_limits[gaussian_i] - thresholds_with_limits[gaussian_i - 1]) / 2)
+
+    return mean_values, std_values

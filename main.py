@@ -29,5 +29,5 @@ if __name__ == "__main__":
     labels, gmm_densities, trained_lr_model = training_main(image_reader)
 
     # Evaluation Stage
-    # This stage includes the plotting of results
+    # This stage includes the plotting of plot_results
     evaluation_main(gmm_densities, trained_lr_model, image_reader)

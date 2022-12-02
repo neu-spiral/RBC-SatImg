@@ -39,7 +39,7 @@ def get_rgb_image(image_all_bands: np.ndarray):
     z = normalize(image_all_bands[:, band_b_pos]).reshape(dim_h, dim_v)
 
     # Stack the three bands
-    rgb = np.dstack((x, y, z)) * 10
+    rgb = np.dstack((x, y, z)) * Config.enhance_rgb[Config.scenario]
 
     # Reshape to get proper image dimensions
     rgb_image = rgb.reshape(dim_h, dim_v, 3)
@@ -47,7 +47,7 @@ def get_rgb_image(image_all_bands: np.ndarray):
 
 
 def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], predicted_image: Dict[str, np.ndarray], labels: np.ndarray, time_index: int, date_string : str, image_idx: int):
-    """ Plots evaluation results when evaluating the target models on the input image.
+    """ Plots evaluation plot_results when evaluating the target models on the input image.
 
     Parameters
     ----------
@@ -68,7 +68,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
 
     Returns
     -------
-    None (plots the obtained results)
+    None (plots the obtained plot_results)
 
     """
     # Get RGB Image
@@ -86,9 +86,9 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
     if Config.scenario=="oroville_dam":
         # Create figure
         f, axarr = plt.subplots(1, 11, figsize=(12, 4))
-        # We need to plot the benchmark deep learning model results as well
+        # We need to plot the baseline_models deep learning model plot_results as well
         if Config.scene_id == 0:
-            # Plot results
+            # Plot plot_results
             axarr[0].imshow(y_pred["Scaled Index"], cmap)
             axarr[1].imshow(y_pred["GMM"], cmap)
             axarr[2].imshow(y_pred["Logistic Regression"], cmap)
@@ -105,7 +105,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
             # in the configuration file.
             x_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['x_coords']
             y_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['y_coords']
-            # Plot results
+            # Plot plot_results
             #axarr[0].imshow(labels[x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]], cmap)
             axarr[0].imshow(y_pred["Scaled Index"][x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]], cmap)
             axarr[1].imshow(y_pred["GMM"][x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]], cmap)
@@ -139,7 +139,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
         # With name according to epsilon value
         # We will store one pickle file per epsilon value
         if Debug.pickle_sensitivity and Config.scene_id==2:
-            print("Saving sensitivity results")
+            print("Saving sensitivity plot_results")
             pickle_file_path = os.path.join(Config.path_evaluation_results,
                                             f'sensitivity_analysis_epsilon_{Config.eps}_image_index_{image_idx}.pkl')
             # Get water pixels dictionary
@@ -152,7 +152,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
         # Create figure
         f, axarr = plt.subplots(1, 8, figsize=(12, 4))
         if Config.scene_id == 0:
-            # Plot results
+            # Plot plot_results
             axarr[0].imshow(y_pred["Scaled Index"], cmap)
             axarr[1].imshow(y_pred["GMM"], cmap)
             axarr[2].imshow(y_pred["Logistic Regression"], cmap)
@@ -165,7 +165,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
             # in the configuration file.
             x_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['x_coords']
             y_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['y_coords']
-            # Plot results
+            # Plot plot_results
             #axarr[0].imshow(labels[x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]], cmap)
             axarr[0].imshow(y_pred["Scaled Index"][x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]], cmap)
             axarr[1].imshow(y_pred["GMM"][x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]], cmap)
