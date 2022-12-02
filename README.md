@@ -85,7 +85,7 @@ training and evaluation. Details regarding the dataset can be found in the Zenod
 ## Results
 Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). For instance, results presented in the manuscript for Study Area C are the ones presented in the following image.
 
-<img alt="Results Study Area C" src="figures/results_study_area_C.png" width="900"/>
+<img alt="Results Study Area C" src="figures/results_study_area_C.png" width="700"/>
 
 If using Jupyter Notebook, we recommend to use it in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) for every execution of the main script. Log files contain information
 regarding events in the code execution.
