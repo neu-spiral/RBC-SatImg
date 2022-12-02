@@ -1,12 +1,14 @@
 import logging
 
 import numpy as np
+import pickle
+import os
 
 from typing import List, Dict
 from sklearn.mixture import GaussianMixture
 from configuration import Config
-from benchmark.benchmark import main_deepwater
-from benchmark.watnet.watnet_infer import watnet_infer_main
+from baseline_models.benchmark import main_deepwater
+from baseline_models.watnet.watnet_infer import watnet_infer_main
 from tools.spectral_index import get_broadband_index, get_scaled_index
 from tools.operations import get_index_pixels_of_interest
 from sklearn.linear_model import LogisticRegression
@@ -81,11 +83,11 @@ class RBC:
             dictionary containing the posterior probabilities for each model
         
         """
-        # Calculate the index of pixels of interest
+        # Get the index of the pixels that define the scene selected in the configuration file
         self.index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
                                                                      scene_id=Config.scene_id)
 
-        # Calculation of the total number of pixels in the processed images
+        # Calculate the total number of pixels in the image (whole image - training area)
         self.total_num_pixels = Config.image_dimensions[Config.scenario]['dim_x'] * \
                                 Config.image_dimensions[Config.scenario]['dim_y']
 
@@ -93,6 +95,7 @@ class RBC:
         # or the likelihood or base model posterior (time_index > 0)
         # The manner to calculate this depends on the model under evaluation (if-clause)
         y_pred = self.calculate_prediction(image_all_bands=image_all_bands)
+        prediction_float = y_pred  # to return for histogram analysis
 
         #  At time instant 0, the prior probability is equal to:
         #   - the model prediction, in the case of having a pretrained model
@@ -131,7 +134,7 @@ class RBC:
         predict_image = self.posterior_probability.argmax(axis=1)
         y_pred = y_pred.argmax(axis=1)  # position with maximum values
 
-        return y_pred, predict_image
+        return y_pred, predict_image, prediction_float
 
     def calculate_prediction(self, image_all_bands: np.ndarray):
         """ Returns the prior/likelihood and posterior probabilities for each evaluated model.
@@ -174,6 +177,12 @@ class RBC:
             water_map = water_map.reshape(-1, 1)
             y_pred = np.concatenate((water_map, 1-water_map), axis=1)
 
+            for idx in range(y_pred.shape[0]):
+                y = y_pred[idx] + Config.norm_constant
+                y = y/sum(y)
+                y_pred[idx] = y
+
+
         # WatNet Model, used in this project for benchmarking
         # The WatNet model is an improved version of the DeepWaterNet model provided by their authors
         elif self.model == "WatNet":
@@ -191,7 +200,12 @@ class RBC:
             water_map = watnet_infer_main(rsimg=image_watnet_bands,
                                      path_model=Config.path_watnet_pretrained_model).reshape(-1, 1)
             y_pred = np.concatenate((water_map, 1-water_map), axis=1)
-
+            y_pred_copy = y_pred.copy().astype(np.float)
+            for idx in range(y_pred.shape[0]):
+                y = y_pred[idx] + Config.norm_constant
+                y = y/sum(y)
+                y_pred_copy[idx] = y
+            y_pred = y_pred_copy
         # Logistic Regression Model
         elif self.model == "Logistic Regression":
 
@@ -211,6 +225,7 @@ class RBC:
             sum_den = np.sum(y_pred, axis=1)
             y_pred = np.divide(y_pred, sum_den.reshape(self.total_num_pixels, 1))
             y_pred = y_pred.astype('float32')
+
         return y_pred
 
     def calculate_posterior(self, bands: np.ndarray, y_pred: np.ndarray, pixel_position: int):

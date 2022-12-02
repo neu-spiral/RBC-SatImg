@@ -12,12 +12,16 @@ class Debug:
     related parameters to False.
 
     """
-    gmm_dump_pickle = False
-    trained_lr_model_pickle = False
-    evaluation_results_pickle = True
-    save_figures = True
-    check_dates = False # If true, we do not evaluate, just check the dates of evaluated images (debugging purposes)
-    pickle_sensitivity = True
+
+    # Debugging options
+    # TODO: Change as desired
+    evaluation_results_pickle = False  # False if wanting to skip evaluation
+    # If evaluation is skipped, previously stored evaluation plot_results are plotted
+    # This option can be used to obtain the figures shown in the manuscript
+    save_figures = True  # True if wanting to save figures with evaluation plot_results
+    check_dates = False  # If True, we do not evaluate, just check the dates of evaluated images (debugging)
+    pickle_sensitivity = False  # True if wanting to perform sensitivity analysis
+    pickle_histogram = False  # True if wanting to store plot_results for histogram analysis
 
     @staticmethod
     def set_logging_file(time_now: datetime):
@@ -48,69 +52,71 @@ class Config:
 
     """
 
+    # Configuration Options
+    # TODO: Change as desired
+    gmm_dump_pickle = False  # False if wanting to use a stored pretrained model for GMM
+    # True if wanting to train the GMM model
+    trained_lr_model_pickle = False  # False if wanting to use a stored pretrained model for LR
+    # True if wanting to train the LR model
+
     # Paths
-    path_zenodo = r"/Users/helena/Documents"
+    # TODO: Download folder from Zenodo and store it in the path 'path_zenodo'
+    path_zenodo = r"/Users/helena/Documents/RBC-SatImg"  # CHANGE
     path_figures = os.path.join(path_zenodo, 'figures')
-    path_sentinel_images = r"/Users/helena/Documents/Sentinel2_data"
-    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark/watnet/model/pretrained/watnet.h5")
-    path_log_files = r"/Users/helena/Documents/log"
-    # path_trained_models = os.path.join(os.getcwd(), r"trained_models")
-    path_trained_models = r"/Users/helena/Documents/trained_models"
-    # path_evaluation_results = os.path.join(os.getcwd(), r"evaluation_results")
-    path_evaluation_results = r"/Users/helena/Documents/evaluation_results"
-    path_checkpoint_deepwatermap = r"/Users/helena/Documents/checkpoints_deepwatermap/cp.135.ckpt"
+    path_sentinel_images = os.path.join(path_zenodo, "Sentinel2_data")
+    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"baseline_models/watnet/model/pretrained/watnet.h5")
+    path_log_files = os.path.join(path_zenodo, 'log')
+    path_trained_models = os.path.join(path_zenodo, "trained_models")
+    path_evaluation_results = os.path.join(path_zenodo, "evaluation_results")
+    # TODO: Download deepwatermap checkpoints file and store in the path 'path_checkpoints_deepwatermap'
+    path_checkpoints_deepwatermap = r"/Users/helena/Documents/checkpoints_deepwatermap/cp.135.ckpt"  # CHANGE
 
-    # Scenario selection
+    # Scenario and scene selection
     scenario = "charles_river"  # charles_river | oroville_dam
-
-    # Scene selection
     scene_id = 3  # 0 | 1 | 2 | 3
-    #   - scene_id = 0 if wanting to process the whole image
+    #   - scene_id = 0 if wanting to process the whole image (DEPRECATED)
     #   - scene_id = 1 for scene A in Oroville Dam (water stream)
     #   - scene_id = 2 for scene B in Oroville Dam (peninsula)
     #   - scene_id = 3 for scene C (Charles River)
 
-    # Coordinates of the pixels to evaluate depending on the selected scene
-    # In the case of scene_id = 0, no coordinates are specified because the whole image wants to be
-    # evaluated.
-    pixel_coords_to_evaluate = {1: {'x_coords': [1700, 1900], 'y_coords': [500, 1000]}, 2: {'x_coords': [1400, 1550], 'y_coords': [1540, 1650]}, 3: {'x_coords': [0, 700], 'y_coords': [800, 2041]}}
-
+    # Scene-dependent parameters
     # Classes to evaluate
     classes = {'charles_river': ['water', 'land', 'vegetation'], 'oroville_dam': ['water', 'no water']}
+    # Prior probabilities
+    prior_probabilities = {'charles_river': [0.33, 0.33, 0.33], 'oroville_dam': [0.5, 0.5]}
+    # Coordinates of the pixels to evaluate depending on the selected scene
+    pixel_coords_to_evaluate = {1: {'x_coords': [1700, 1900], 'y_coords': [500, 1000]},
+                                2: {'x_coords': [1400, 1550], 'y_coords': [1540, 1650]},
+                                3: {'x_coords': [0, 700], 'y_coords': [800, 2041]}}
+    # Spectral Bands used to calculate the Spectral Indices
+    # For NDVI, NIR (8) and Red (4) bands are used. Used for 'Charles River' scenario by the authors.
+    # For NDWI, Green (3) and NIR (8) bands are used
+    # For MNDWI, Green (3) and SWIR (11) bands are used. Used for 'Oroville Dam' scenario by the authors.
+    bands_spectral_index = {'charles_river': ['8', '4'],
+                            'oroville_dam': ['3', '11']}  # band identifiers must be a string
+    # Type of the images to be read
+    image_types = {'charles_river': 'TCG', 'oroville_dam': 'SFJ'}
+    #   - 'charles_river': TCH|TCG
+    #   - 'oroville_dam': SFJ|TFK
+    # Pixel coordinates of the images to read (dimensions)
+    image_dimensions = {'charles_river': {'dim_x': 927, 'dim_y': 2041}, 'oroville_dam': {'dim_x': 2229, 'dim_y': 3341}}
 
-    # Scaling factors
+    # Image scaling factor
     scaling_factor_sentinel = 1e-4  # Sentinel-2 image processing, used when reading a Sentinel-2 image
     scaling_factor_watnet = 1
 
     # Training data cropping
     training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5}
-    # Gaussian Mixtures Model Selection
+
+    # Model Selection (GMM)
     # These values have been set after data inspection
-    gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [-0.05, 0.35]},
-                          'oroville_dam': {'num_components': [5, 3], 'thresholds': [0.13]}}
     # The thresholds are used to compute the scaled index model mean and std values, and also for labeling
+    gm_model_selection = {'charles_river': {'num_components': [5, 3, 3], 'thresholds': [-0.01, 0.35]},
+                          'oroville_dam': {'num_components': [5, 3], 'thresholds': [0.13]}}
 
-    # Scaled Spectral Indices: values for their probabilistic model
-    scaled_index_model = {'oroville_dam': {'mean_values': [-0.435, 0.565], 'std_values': [0.565,0.435]}, 'charles_river': {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}}
-    # For the 3 classes 'charles_river' scenario, the authors propose
-    # *scaled_index_model = {'mean_values': [-0.525, 0.15, 0.675], 'std_values': [0.475, 0.2, 0.325]}*
-    # TODO: Define the following case (2 classes 'oroville dam')
-    # For the 2 classes 'oroville_dam' scenario, the authors propose
-    # *scaled_index_model = {'mean_values': [], 'std_values': []}*
-
-    # Prior probabilities
-    prior_probabilities = {'charles_river': [0.33, 0.33, 0.33],
-                           'oroville_dam': [0.5, 0.5]}
-
-    # Index of the images plotted for evaluation
-    # We get the index of the images to plot as a function of the scene_id
-    index_plot = {2: [2, 9, 12, 25, 28, 30, 39], 1: [3, 4, 22, 35, 38, 39], 3: [3,5,10,14,15,23,24]}
-
-    # Spectral Bands used to calculate the Spectral Indices
-    # For NDVI, NIR (8) and Red (4) bands are used. Used for 'Charles River' scenario by the authors.
-    # For NDWI, Green (3) and NIR (8) bands are used
-    # For MNDWI, Green (3) and SWIR (11) bands are used. Used for 'Oroville Dam' scenario by the authors.
-    bands_spectral_index = {'charles_river': ['8', '4'], 'oroville_dam': ['3', '11']}  # band identifiers must be a string
+    # Normalization constant to make classifier less confident
+    # Equation (10) from manuscript
+    norm_constant = 0.3
 
     # Spectral Bands
     # The main selected bands are the following
@@ -120,22 +126,23 @@ class Config:
     # In the paper associated to the 'deepwaternet' algorithm the authors mention the selection of the following bands
     bands_deepwaternet = [3, 4, 5, 6, 1, 2]
 
-    # Type of the images to be read
-    image_types = {'charles_river': 'TCG', 'oroville_dam': 'SFJ'}
-    #   - 'charles_river': TCH|TCG
-    #   - 'oroville_dam': SFJ|TFK
-
-    # Pixel coordinates of the images to read (dimensions)
-    # TODO: Change the code so that this does not need to be hardcoded in the configuration file
-    image_dimensions = {'charles_river': {'dim_x': 927, 'dim_y': 2041}, 'oroville_dam': {'dim_x': 2229, 'dim_y': 3341}}
-
     # Transition Matrix
-    # The transition matrix is given by the user (hardcoded in this configuration file)
-    eps = 0.1
-    transition_matrix = {'oroville_dam':  np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2), 'charles_river':np.array([1 - eps, eps, eps, eps,1 - eps,eps,eps,eps,1-eps]).reshape(3,3)}
+    # The transition matrix depends on the transition probability constant, denoted as epsilon
+    eps = 0.05
+    transition_matrix = {'oroville_dam': np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2),
+                         'charles_river': np.array(
+                             [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+                             3, 3)}
 
+    # Set the following parameter to a value different from 0 if wanting to read a specific number of images
+    # different from the ones available
+    num_evaluation_images_hardcoded = 0
+
+    # Results Visualization Options
     # cmap for mapping classes with colors
-    cmap = {'oroville_dam':  ['yellow','#440154'], 'charles_river': ['#440154','yellow','green']}
+    cmap = {'oroville_dam': ['yellow', '#440154'], 'charles_river': ['#440154', 'yellow', 'green']}
+    # RGB enhance constant
+    enhance_rgb = {'charles_river': 10, 'oroville_dam': 4}
 
-    # enhance rgb
-    enhance = {'charles_river': 10, 'oroville_dam': 1}
+    # Offset of evaluation images to consider in the evaluation stage
+    offset_eval_images = 1

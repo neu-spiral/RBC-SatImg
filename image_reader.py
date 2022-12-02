@@ -99,9 +99,11 @@ class ReadSentinel2(ImageReader):
 
         """
         band = gdal.Open(path_band).ReadAsArray()
+        #print(f'Mean Value Band {np.mean(band)}')
         # Check if the image dimensions are the proper ones
         if band.shape != (self.dim_x, self.dim_y):
             band = transform.resize(band, (self.dim_x, self.dim_y), anti_aliasing=True, preserve_range=True)
+            #print('issue')
         return band
 
     def read_image(self, path: str, image_idx: int):
@@ -137,6 +139,8 @@ class ReadSentinel2(ImageReader):
 
             # Read the corresponding band
             image_band = self.read_band(path_band=path_image_band)
+            #print(path_image_band)
+            #print(np.mean(image_band))
 
             # Add the read band to the *image_all_bands* array
             image_all_bands.extend([image_band.flatten()])
