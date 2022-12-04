@@ -2,10 +2,6 @@
 
 This code has been implemented in Python 3.9. The performance of three static classification algorithms and their recursive versions is compared, including a Gaussian Mixture Model (GMM), Logistic Regression (LR) and Spectral Index Classifiers (SICs). 
 
-Please contact the following email address if having questions regarding the code: 
-
-<img alt="Study Area Water Mapping" src="readme_figures/address.png" width="200"/>
-
 ## Study Area
 The first experiment considers water mapping of an embankment dam in California, with one training region and two study areas for evaluation (see the following figure).
 
@@ -91,11 +87,13 @@ In `configuration.py` (class `Config`), change `path_zenodo` to the path where t
 training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
 ## Results
-Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). The Zenodo folder provided by the authors contains the corresponding pickle files to be read so that results from the manuscript can be reproduced (see the `./evaluation_results/` folder from the Zenodo link) without the need to go through the training and evaluation stages. For instance, results presented in the manuscript for Study Area C are the ones presented in the following image.
+Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). In the Jupyter Notebook file there are instructions to reproduce results from the manuscript figures 5, 6 and 7. For instance, results presented in the manuscript for Study Area C (Figure 7) are the ones presented in the following image.
 
 <img alt="Results Study Area C" src="readme_figures/results_study_area_C.png" width="700"/>
 
-If using Jupyter Notebook, we recommend to use it in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) for every execution of the main script. Log files contain information
+Also, instructions on how to reproduce Figure 8 are provided. We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). 
+
+A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) for every execution of the main script. Log files contain information
 regarding events in the code execution.
 
 ## References
@@ -116,12 +114,23 @@ Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is propo
 [An applicable and automatic method for earth surface water mapping based on multispectral images](https://www.sciencedirect.com/science/article/pii/S0303243421001793).
 
 ## Authors
-* Helena Calatrava, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
+* Helena Calatrava (1)
+* Bhavya Duvvuri (2)
+* Haoqing Li (1)
+* Ricardo Borsoi (3)
+* Tales Imbiariba (1)
+* Edward Beighley (2)
+* Deniz Erdogmus (1)
+* Pau Closas (1)
+
+(1): Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
 Northeastern University, Boston (MA).
-* Bhavya Duvvuri, The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
+
+(2): The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
 University, Boston (MA).
-* Haoqing Li, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
-Northeastern University, Boston (MA).
-* Ricardo Borsoi, CRAN, University of Lorraine, CNRS, Vandoeuvre-les-Nancy, F-54000, France.
-* Tales Imbiariba, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
-Northeastern University, Boston (MA).
+ 
+(3): CRAN, University of Lorraine, CNRS, Vandoeuvre-les-Nancy, F-54000, France.
+
+Please contact the following email address if having questions regarding the code: 
+
+<img alt="Study Area Water Mapping" src="readme_figures/address.png" width="200"/>
