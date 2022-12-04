@@ -1,6 +1,10 @@
 # Recursive classification of satellite imaging time series: An application to water and land cover mapping
 
-This code has been implemented in Python 3.9. The performance of three static classification algorithms and their recursive versions is compared, including a Gaussian Mixture Model (GMM), Logistic Regression (LR) and Spectral Index Classifiers (SICs).
+This code has been implemented in Python 3.9. The performance of three static classification algorithms and their recursive versions is compared, including a Gaussian Mixture Model (GMM), Logistic Regression (LR) and Spectral Index Classifiers (SICs). 
+
+Please contact the following email address if having questions regarding the code: 
+
+<img alt="Study Area Water Mapping" src="readme_figures/address.png" width="200"/>
 
 ## Study Area
 The first experiment considers water mapping of an embankment dam in California, with one training region and two study areas for evaluation (see the following figure).
@@ -113,7 +117,7 @@ Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is propo
 
 ## Authors
 * Helena Calatrava, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
-Northeastern University, Boston (MA). Contact: helena.calat@gmail.com
+Northeastern University, Boston (MA).
 * Bhavya Duvvuri, The Beighley Lab (Sustainable Water Resources | Resilient Wet Infrastructure) at Northeastern
 University, Boston (MA).
 * Haoqing Li, Signal Processing, Imaging, Reasoning and Learning (SPIRAL) at 
