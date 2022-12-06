@@ -45,6 +45,7 @@ def training_main(image_reader: ReadSentinel2):
     logging.debug("Training stage is finished")
     return labels, gmm_densities, trained_lr_model
 
+
 '''
 def generate_new_labels(images: np.ndarray, gmm_densities: List[GaussianMixture], classes: List[str]):
     """ Generates labels for the training data of the Logistic Regression Model. The likelihood is obtained 
@@ -79,6 +80,7 @@ def generate_new_labels(images: np.ndarray, gmm_densities: List[GaussianMixture]
                                                      sum_den.reshape(sum_den.shape[0], 1)[sum_den_nonzero_positions, :])
     return labels.argmax(axis=1)
 '''
+
 
 def read_training_images(image_reader: ReadSentinel2):
     """ Reads available training images.
@@ -170,7 +172,8 @@ def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
             # Cut the number of pixels used for training if the code execution is too slow
             # by using the parameter *Config.training_data_crop*
             gmm_densities.append(GaussianMixture(n_components=num_components).fit(
-                images[labels==class_idx, :-1][0:int(Config.training_data_crop_ratio[Config.scenario] * images.shape[0])]))
+                images[labels == class_idx, :-1][
+                0:int(Config.training_data_crop_ratio[Config.scenario] * images.shape[0])]))
 
         # Dump data into pickle
         pickle.dump(gmm_densities, open(pickle_file_path, 'wb'))

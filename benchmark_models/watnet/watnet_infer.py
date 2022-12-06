@@ -19,8 +19,8 @@ example:
 import os
 import numpy as np
 import tensorflow as tf
-from baseline_models.watnet.utils_watnet.imgPatch import imgPatch
-from baseline_models.watnet.utils_watnet.geotif_io import readTiff,writeTiff
+from benchmark_models.watnet.utils_watnet.imgPatch import imgPatch
+from benchmark_models.watnet.utils_watnet.geotif_io import readTiff,writeTiff
 
 ## default path of the pretrained watnet model
 path_watnet = 'model/pretrained/watnet.h5'

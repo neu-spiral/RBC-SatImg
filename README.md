@@ -18,7 +18,7 @@ The project is structured as follows.
 
 * `requirements.txt`
 
-* `./baseline_models/`
+* `./benchmark_models/`
 
     * `./deepwatermap_main/` contains part of the deepwatermap algorithm open 
 source code shared in [this GitHub repository](https://github.com/isikdogan/deepwatermap). An `__init__.py`
@@ -87,11 +87,11 @@ In `configuration.py` (class `Config`), change `path_zenodo` to the path where t
 training and evaluation. Details regarding the dataset can be found in the Zenodo link.
 
 ## Results
-Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). In the Jupyter Notebook file there are instructions to reproduce results from the manuscript figures 5, 6 and 7. For instance, results presented in the manuscript for Study Area C (Figure 7) are the ones presented in the following image.
+Results presented in the manuscript can be obtained by executing the `main_notebook.ipynb` (Jupyter Notebook) or the `main.py`file (Python script). In the Jupyter Notebook file there are instructions to reproduce results from the manuscript Figures 5, 6 and 7. For instance, results for Study Area C (Figure 7) are the ones in the following image.
 
 <img alt="Results Study Area C" src="readme_figures/results_study_area_C.png" width="700"/>
 
-Also, instructions on how to reproduce Figure 8 are provided. We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). 
+Also, instructions to reproduce Figure 8 are provided. We recommend to use Jupyter Notebook in a conda environment (see instructions [here](https://stackoverflow.com/questions/58068818/how-to-use-jupyter-notebooks-in-a-conda-environment)). 
 
 A log file is generated in the `path_log_files` path (defined in `configuration.py`, class `Config`) for every execution of the main script. Log files contain information
 regarding events in the code execution.
