@@ -118,7 +118,7 @@ Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is propo
 * Bhavya Duvvuri (2)
 * Haoqing Li (1)
 * Ricardo Borsoi (3)
-* Tales Imbiariba (1)
+* Tales Imbiriba (1)
 * Edward Beighley (2)
 * Deniz Erdogmus (1)
 * Pau Closas (1)
