@@ -14,18 +14,18 @@ class Debug:
     """
 
     # Debugging options
-    # TODO: Change as desired
-    evaluation_results_pickle = False  # False if wanting to skip evaluation
-    # If evaluation is skipped, previously stored evaluation plot_results are plotted
-    # This option can be used to obtain the readme_figures shown in the manuscript
-    save_figures = True  # True if wanting to save readme_figures with evaluation plot_results
-    check_dates = False  # If True, we do not evaluate, just check the dates of evaluated images (debugging)
+    save_figures = True  # True if wanting to save figures with results when using scripts in the folder `plot_results`
     pickle_sensitivity = False  # True if wanting to perform sensitivity analysis
-    pickle_histogram = False  # True if wanting to store plot_results for histogram analysis
+    pickle_histogram = False  # True if wanting to store results for histogram analysis
+    check_dates = False  # If True, we do not evaluate, just check the dates of evaluated images (debugging)
+    
 
     @staticmethod
     def set_logging_file(time_now: datetime):
         """ Creates a log file for the current code execution.
+
+
+        force = True in logging.basicConfig() because otherwise the file path is not updated (see [https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm])
 
         Parameters
         ----------
@@ -39,7 +39,7 @@ class Debug:
 
         # Set log file basic configuration
         logging.basicConfig(filename=file_path, level=logging.DEBUG, format='%(asctime)s %(message)s',
-                            datefmt='%m/%d/%Y %I:%M:%S %p')
+                            datefmt='%m/%d/%Y %I:%M:%S %p', force=True)
 
         # Write first commands in the log file
         logging.debug(f"Log file has been created at {time_now}")
@@ -52,8 +52,32 @@ class Config:
 
     """
 
+    # Offset of evaluation images to consider in the evaluation stage: For the manuscript we have skipped the first
+    # date because the image did not provide a good initialization for the recursive framework
+    offset_eval_images = 1
+
     # Configuration Options
     # TODO: Change as desired
+    evaluation_generate_results = True  # False if wanting to skip evaluation
+    # If evaluation is skipped, previously stored evaluation plot_results are plotted
+    evaluation_store_results = True
+
+    # Index of images to be plotted
+    # If wanting to plot all dates:
+    index_images_to_plot = {2: [*range(offset_eval_images, 42, 1)],
+                                   1: [*range(offset_eval_images, 42, 1)],
+                                   3: [*range(offset_eval_images, 28, 1)]}
+    # If wanting to reproduce Figure 5:
+    # Config.index_images_to_plot = {1: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40], 2: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40], 3: [0, 4, 8, 12, 16, 20, 24]}
+
+    evaluation_store_results = True
+    # If wanting to store results obtained with all dates (consider the previous important note regarding big file sizes):
+    index_images_to_store = {2: [*range(offset_eval_images, 42, 1)],
+                                    1: [*range(offset_eval_images, 42, 1)],
+                                    3: [*range(offset_eval_images, 28, 1)]}
+    # If wanting to store only results to reproduce Figure 5 (these results are already provided in the Zenodo folder)
+    # Config.index_images_to_store = {1: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40], 2: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40], 3: [0, 4, 8, 12, 16, 20, 24]}
+
     gmm_dump_pickle = False  # False if wanting to use a stored pretrained model for GMM
     # True if wanting to train the GMM model
     trained_lr_model_pickle = False  # False if wanting to use a stored pretrained model for LR
@@ -61,11 +85,11 @@ class Config:
 
     # Paths
     # TODO: Download folder from Zenodo and store it in the path 'path_zenodo'
-    path_zenodo = r"/Users/helena/Documents/RBC-SatImg"  # TODO: CHANGE
+    path_zenodo = r"/Users/helena/Documents/Zenodo_RBC"  # TODO: CHANGE
     path_evaluation_results = os.path.join(path_zenodo, "evaluation_results")
     path_sentinel_images = os.path.join(path_zenodo, "Sentinel2_data")
     path_results_figures = os.path.join(path_zenodo, 'results_figures')
-    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"baseline_models/watnet/model/pretrained/watnet.h5")
+    path_watnet_pretrained_model = os.path.join(os.getcwd(), r"benchmark_models/watnet/model/pretrained/watnet.h5")
     path_log_files = os.path.join(path_zenodo, 'log')
     path_trained_models = os.path.join(os.getcwd(), "trained_models")
     # TODO: Download deepwatermap checkpoints file and store in the path 'path_checkpoints_deepwatermap'
@@ -105,7 +129,8 @@ class Config:
     scaling_factor_sentinel = 1e-4  # Sentinel-2 image processing, used when reading a Sentinel-2 image
     scaling_factor_watnet = 1
 
-    # Training data cropping
+    # Training data cropping: The amount of pixels used for training, which belong to the training regions described
+    # in the manuscript, can be cropped to speed up code execution
     training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5}
 
     # Model Selection (GMM)
@@ -142,7 +167,5 @@ class Config:
     # cmap for mapping classes with colors
     cmap = {'oroville_dam': ['yellow', '#440154'], 'charles_river': ['#440154', 'yellow', 'green']}
     # RGB enhance constant
-    enhance_rgb = {'charles_river': 10, 'oroville_dam': 4}
+    scaling_rgb = {2: 2.2, 1: 3.2, 3: 12}
 
-    # Offset of evaluation images to consider in the evaluation stage
-    offset_eval_images = 1

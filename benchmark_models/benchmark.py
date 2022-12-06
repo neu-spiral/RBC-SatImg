@@ -1,6 +1,6 @@
 import numpy as np
 
-from benchmark.deepwatermap_main import deepwatermap
+from benchmark_models.deepwatermap_main import deepwatermap
 
 
 def find_padding(v, divisor=32):

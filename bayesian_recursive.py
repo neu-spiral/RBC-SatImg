@@ -7,8 +7,8 @@ import os
 from typing import List, Dict
 from sklearn.mixture import GaussianMixture
 from configuration import Config
-from baseline_models.benchmark import main_deepwater
-from baseline_models.watnet.watnet_infer import watnet_infer_main
+from benchmark_models.benchmark import main_deepwater
+from benchmark_models.watnet.watnet_infer import watnet_infer_main
 from tools.spectral_index import get_broadband_index, get_scaled_index
 from tools.operations import get_index_pixels_of_interest
 from sklearn.linear_model import LogisticRegression
@@ -52,7 +52,7 @@ class RBC:
         self.num_classes = len(classes)
         self.model = model
         self.densities = gmm_densities
-        print(f"model name {self.model} and transition probability matrix is {self.transition_matrix}")
+        #print(f"model name {self.model} and transition probability matrix is {self.transition_matrix}")
 
     @classmethod
     def set_lr_trained_model(cls, trained_model: LogisticRegression):
@@ -173,7 +173,7 @@ class RBC:
                 np.clip(image_deepwaternet_bands * Config.scaling_factor_watnet, a_min=0, a_max=1))
 
             # The model published by the authors is called within the main_deepwater function
-            water_map = main_deepwater(checkpoint_path=Config.path_checkpoint_deepwatermap, image=image_deepwaternet_bands)
+            water_map = main_deepwater(checkpoint_path=Config.path_checkpoints_deepwatermap, image=image_deepwaternet_bands)
             water_map = water_map.reshape(-1, 1)
             y_pred = np.concatenate((water_map, 1-water_map), axis=1)
 

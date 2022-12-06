@@ -39,7 +39,7 @@ def get_rgb_image(image_all_bands: np.ndarray):
     z = normalize(image_all_bands[:, band_b_pos]).reshape(dim_h, dim_v)
 
     # Stack the three bands
-    rgb = np.dstack((x, y, z)) * Config.enhance_rgb[Config.scenario]
+    rgb = np.dstack((x, y, z)) * Config.scaling_rgb[Config.scene_id]
 
     # Reshape to get proper image dimensions
     rgb_image = rgb.reshape(dim_h, dim_v, 3)
@@ -86,7 +86,7 @@ def plot_results(image_all_bands: np.ndarray, y_pred: Dict[str, np.ndarray], pre
     if Config.scenario=="oroville_dam":
         # Create figure
         f, axarr = plt.subplots(1, 11, figsize=(12, 4))
-        # We need to plot the baseline_models deep learning model plot_results as well
+        # We need to plot the benchmark_models deep learning model plot_results as well
         if Config.scene_id == 0:
             # Plot plot_results
             axarr[0].imshow(y_pred["Scaled Index"], cmap)
