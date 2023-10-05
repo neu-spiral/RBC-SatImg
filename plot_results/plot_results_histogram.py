@@ -54,5 +54,5 @@ f.suptitle(f"Histogram posterior all samples date {date_string}, epsilon {epsilo
 
 # Save figure as pdf
 if Debug.save_figures:
-    path_image_save = os.path.join(Config.path_figures, f'histogram_y_pred_{Config.scenario}_{Config.scene_id}_epsilon_{epsilon_value}_norm_constant_{Config.norm_constant}.pdf')
+    path_image_save = os.path.join(Config.path_figures, f'histogram_likelihood_{Config.scenario}_{Config.scene_id}_epsilon_{epsilon_value}_norm_constant_{Config.norm_constant}.pdf')
     plt.savefig(path_image_save, format="pdf", bbox_inches="tight")

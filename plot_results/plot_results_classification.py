@@ -2,6 +2,7 @@ import pickle
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from image_reader import ReadSentinel2
 from configuration import Config, Debug
@@ -20,8 +21,19 @@ class ClassificationResultsFigure:
         self.x_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['x_coords']
         self.y_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['y_coords']
 
+    def create_quantitative_results_figure(self):
+        """ Creates figure to show quantitative classification results.
+
+        """
+        self.f, self.axarr = plt.subplots(len(Config.index_quant_analysis), 13, figsize=(15, 15))
+
+    def get_quantitative_results(self, label_image: np.ndarray, class_labels: np.ndarray):
+        classification_map = (np.abs(class_labels - label_image) - 1)*(-1) # 1 means a match
+        matched_pixel_percentage = np.sum(classification_map)/(classification_map.shape[0]*classification_map.shape[1])
+        return classification_map, matched_pixel_percentage
+
     def create_figure(self):
-        """ Creates figure to show classification results.
+        """ Creates figure to show qualitative classification results.
 
         """
         self.index_results_to_plot = Config.index_images_to_plot[Config.scene_id]
@@ -51,7 +63,7 @@ class ClassificationResultsFigure:
         elif Config.scene_id == 3:
             print("Results for Charles River, Study Area C")
 
-            # Create figure (size changes depending on the amount of plotted images)
+            # Create figure (size changes  depending on the amount of plotted images)
             if self.big_figure == False:
                 # if wanting to plot the same images plotted in the manuscript (1 every four dates are selected)
                 self.f, self.axarr = plt.subplots(self.n_results_to_plot, 7, figsize=(9, 10))
@@ -67,6 +79,20 @@ class ClassificationResultsFigure:
             plt.subplots_adjust(top=0.437, right=0.776)
             # plt.subplot_tool()
             # plt.show()
+        elif Config.scene_id == 4:
+            print("Results for MultiEarth Dataset")
+
+            # Create figure
+            self.f, self.axarr = plt.subplots(self.n_results_to_plot, 8, figsize=(5, 50))
+            self.f, self.axarr = plt.subplots(self.n_results_to_plot, 8, figsize=(5, 7)) # small one only quantitative
+            self.f, self.axarr = plt.subplots(self.n_results_to_plot, 8, figsize=(10, 35))  # full results
+
+            # Vectors with models to plot
+            self.plot_legend = ['Acq. date      SIC', 'GMM', 'LR', 'RSIC', 'RGMM', 'RLR', 'RGB', 'Label     Label Date']
+            self.models = ['Scaled Index', 'GMM', 'Logistic Regression']  # TODO: Use this vector to clean code
+
+            # Adjust space between subplots
+            plt.subplots_adjust(top=0.437, right=0.776)
         else:
             print("No plot_results of this scene appearing in the publication.")
 
@@ -96,12 +122,12 @@ class ClassificationResultsFigure:
 
                 # Read stored evaluation plot_results to reproduce published figure
                 pickle_file_path = os.path.join(path_results, f"oroville_dam_{Config.scene_id}_image_{self.index_results_to_plot[image_i]}_epsilon_{Config.eps}_norm_constant_{Config.norm_constant}.pkl")
-                [y_pred, predicted_image] = pickle.load(open(pickle_file_path, 'rb'))
+                [predicted_class, posterior] = pickle.load(open(pickle_file_path, 'rb'))
                 print(pickle_file_path)
 
                 # Plot plot_results
                 self.axarr[image_i, 0].imshow(
-                    y_pred["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    predicted_class["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 0].get_yaxis().set_ticks([])
@@ -121,43 +147,43 @@ class ClassificationResultsFigure:
                     self.axarr[image_i, 0].yaxis.set_label_coords(-0.9, 0.4)
 
                 self.axarr[image_i, 1].imshow(
-                    y_pred["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
+                    predicted_class["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 1].axis('off')
                 self.axarr[image_i, 2].imshow(
-                    y_pred["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    predicted_class["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 2].axis('off')
                 self.axarr[image_i, 3].imshow(
-                    y_pred["DeepWaterMap"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    predicted_class["DeepWaterMap"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 3].axis('off')
                 self.axarr[image_i, 4].imshow(
-                    y_pred["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
+                    predicted_class["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 4].axis('off')
-                self.axarr[image_i, 5].imshow(predicted_image["Scaled Index"][self.x_coords[0]:self.x_coords[1],
+                self.axarr[image_i, 5].imshow(posterior["Scaled Index"][self.x_coords[0]:self.x_coords[1],
                                               self.y_coords[0]:self.y_coords[1]],
                                               self.cmap, aspect='auto')
                 self.axarr[image_i, 5].axis('off')
                 self.axarr[image_i, 6].imshow(
-                    predicted_image["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    posterior["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 6].axis('off')
                 self.axarr[image_i, 7].imshow(
-                    predicted_image["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
+                    posterior["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
                     self.y_coords[0]:self.y_coords[1]], self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 7].axis('off')
-                self.axarr[image_i, 8].imshow(predicted_image["DeepWaterMap"][self.x_coords[0]:self.x_coords[1],
+                self.axarr[image_i, 8].imshow(posterior["DeepWaterMap"][self.x_coords[0]:self.x_coords[1],
                                               self.y_coords[0]:self.y_coords[1]],
                                               self.cmap, aspect='auto')
                 self.axarr[image_i, 8].axis('off')
                 self.axarr[image_i, 9].imshow(
-                    predicted_image["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    posterior["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap,
                     aspect='auto')
                 self.axarr[image_i, 9].axis('off')
@@ -188,12 +214,12 @@ class ClassificationResultsFigure:
                 # Read stored evaluation plot_results to reproduce published figure
                 pickle_file_path = os.path.join(path_results,
                                                 f"charles_river_{Config.scene_id}_image_{self.index_results_to_plot[image_i]}_epsilon_{Config.eps}.pkl")
-                [y_pred, predicted_image] = pickle.load(open(pickle_file_path, 'rb'))
+                [predicted_class, posterior] = pickle.load(open(pickle_file_path, 'rb'))
                 print(pickle_file_path)
 
                 # Plot plot_results
                 self.axarr[image_i, 0].imshow(
-                    y_pred["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    predicted_class["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap)
                 self.axarr[image_i, 0].get_yaxis().set_ticks([])
                 self.axarr[image_i, 0].get_xaxis().set_ticks([])
@@ -213,22 +239,22 @@ class ClassificationResultsFigure:
                     self.axarr[image_i, 0].yaxis.set_label_coords(-0.7, 0.25)
 
                 self.axarr[image_i, 1].imshow(
-                    y_pred["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap)
+                    predicted_class["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap)
                 self.axarr[image_i, 1].axis('off')
                 self.axarr[image_i, 2].imshow(
-                    y_pred["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    predicted_class["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap)
                 self.axarr[image_i, 2].axis('off')
-                self.axarr[image_i, 3].imshow(predicted_image["Scaled Index"][self.x_coords[0]:self.x_coords[1],
+                self.axarr[image_i, 3].imshow(posterior["Scaled Index"][self.x_coords[0]:self.x_coords[1],
                                               self.y_coords[0]:self.y_coords[1]],
                                               self.cmap)
                 self.axarr[image_i, 3].axis('off')
                 self.axarr[image_i, 4].imshow(
-                    predicted_image["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                    posterior["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                     self.cmap)
                 self.axarr[image_i, 4].axis('off')
                 self.axarr[image_i, 5].imshow(
-                    predicted_image["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
+                    posterior["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
                     self.y_coords[0]:self.y_coords[1]], self.cmap)
                 self.axarr[image_i, 5].axis('off')
                 self.axarr[image_i, 6].imshow(
@@ -254,7 +280,10 @@ class ClassificationResultsFigure:
                                      f'classification_{Config.scenario}_{Config.scene_id}_epsilon_{Config.eps}_norm_constant_{Config.norm_constant}.pdf'),
                         format="pdf", bbox_inches="tight", dpi=200)
 
-    def plot_results_one_date(self, image_idx, image_all_bands, date_string, y_pred, predicted_image, result_idx):
+    def plot_results_one_date(self, image_idx: int, image_all_bands: np.ndarray, date_string: str,
+                              base_model_predicted_class: np.ndarray, posterior: np.ndarray, result_idx: int):
+    #use the following line if wanting to use the predicted probabilities (besides the predicted classes)
+    #def plot_results_one_date(self, image_idx: int, image_all_bands: np.ndarray, date_string: str, base_model_predicted_class: np.ndarray, posterior: np.ndarray, result_idx: int, base_model_predicted_probabilities: np.ndarray):
         """ Plots all the results that have been stored with the corresponding configuration.
 
         """
@@ -270,7 +299,7 @@ class ClassificationResultsFigure:
 
             # Plot plot_results
             self.axarr[result_idx, 0].imshow(
-                y_pred["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                base_model_predicted_class["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 0].get_yaxis().set_ticks([])
@@ -290,43 +319,43 @@ class ClassificationResultsFigure:
                 self.axarr[result_idx, 0].yaxis.set_label_coords(-0.9, 0.4)
 
             self.axarr[result_idx, 1].imshow(
-                y_pred["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
+                base_model_predicted_class["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 1].axis('off')
             self.axarr[result_idx, 2].imshow(
-                y_pred["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                base_model_predicted_class["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 2].axis('off')
             self.axarr[result_idx, 3].imshow(
-                y_pred["DeepWaterMap"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                base_model_predicted_class["DeepWaterMap"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 3].axis('off')
             self.axarr[result_idx, 4].imshow(
-                y_pred["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
+                base_model_predicted_class["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 4].axis('off')
-            self.axarr[result_idx, 5].imshow(predicted_image["Scaled Index"][self.x_coords[0]:self.x_coords[1],
+            self.axarr[result_idx, 5].imshow(posterior["Scaled Index"][self.x_coords[0]:self.x_coords[1],
                                           self.y_coords[0]:self.y_coords[1]],
                                           self.cmap, aspect='auto')
             self.axarr[result_idx, 5].axis('off')
             self.axarr[result_idx, 6].imshow(
-                predicted_image["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                posterior["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 6].axis('off')
             self.axarr[result_idx, 7].imshow(
-                predicted_image["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
+                posterior["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
                 self.y_coords[0]:self.y_coords[1]], self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 7].axis('off')
-            self.axarr[result_idx, 8].imshow(predicted_image["DeepWaterMap"][self.x_coords[0]:self.x_coords[1],
+            self.axarr[result_idx, 8].imshow(posterior["DeepWaterMap"][self.x_coords[0]:self.x_coords[1],
                                           self.y_coords[0]:self.y_coords[1]],
                                           self.cmap, aspect='auto')
             self.axarr[result_idx, 8].axis('off')
             self.axarr[result_idx, 9].imshow(
-                predicted_image["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                posterior["WatNet"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap,
                 aspect='auto')
             self.axarr[result_idx, 9].axis('off')
@@ -341,16 +370,15 @@ class ClassificationResultsFigure:
                 self.axarr[0, idx].title.set_text(self.plot_legend[idx])
 
         # Plot plot_results for Charles River scenario
-        elif Config.scene_id == 3:
+        elif Config.scene_id == 3 or Config.scene_id == 4:
             print("Results for Charles River, Study Area C")
 
             # Get RGB Image
-            rgb_image = get_rgb_image(image_all_bands=image_all_bands)
+            rgb_image = 5*get_rgb_image(image_all_bands=image_all_bands)
 
-            # Plot plot_results
+            # Plot Scaled Index (SIC)
             self.axarr[result_idx, 0].imshow(
-                y_pred["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
-                self.cmap)
+                base_model_predicted_class["Scaled Index"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap)
             self.axarr[result_idx, 0].get_yaxis().set_ticks([])
             self.axarr[result_idx, 0].get_xaxis().set_ticks([])
 
@@ -358,7 +386,7 @@ class ClassificationResultsFigure:
             for axis in ['top', 'bottom', 'left', 'right']:
                 self.axarr[result_idx, 0].spines[axis].set_linewidth(0)
 
-                self.axarr[result_idx, 0].set_ylabel(date_string, rotation=0, fontsize=11.7, fontfamily='Times New Roman')
+            self.axarr[result_idx, 0].set_ylabel(date_string, rotation=0, fontsize=7.5, fontfamily='Times New Roman')# new plot fontsize changed
 
             # The label position must be changed accordingly, considering the amount of images plotted
             if self.big_figure:
@@ -367,35 +395,81 @@ class ClassificationResultsFigure:
             else:
                 # if wanting to plot the same images plotted in the manuscript (1 every four dates are selected)
                 self.axarr[result_idx, 0].yaxis.set_label_coords(-0.7, 0.25)
+            self.axarr[result_idx, 0].yaxis.set_label_coords(-0.88, 0.32)  # new plot location changed
 
+            # Plot GMM
             self.axarr[result_idx, 1].imshow(
-                y_pred["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap)
+                base_model_predicted_class["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]], self.cmap)
             self.axarr[result_idx, 1].axis('off')
+
+            # Plot LR
             self.axarr[result_idx, 2].imshow(
-                y_pred["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                base_model_predicted_class["Logistic Regression"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap)
             self.axarr[result_idx, 2].axis('off')
-            self.axarr[result_idx, 3].imshow(predicted_image["Scaled Index"][self.x_coords[0]:self.x_coords[1],
+
+            # Plot Recursive Scaled Index (RSIC)
+            self.axarr[result_idx, 3].imshow(posterior["Scaled Index"][self.x_coords[0]:self.x_coords[1],
                                           self.y_coords[0]:self.y_coords[1]],
                                           self.cmap)
             self.axarr[result_idx, 3].axis('off')
+
+            # Plot RGMM
             self.axarr[result_idx, 4].imshow(
-                predicted_image["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
+                posterior["GMM"][self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]],
                 self.cmap)
             self.axarr[result_idx, 4].axis('off')
+
+            # Plot RLR
             self.axarr[result_idx, 5].imshow(
-                predicted_image["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
+                posterior["Logistic Regression"][self.x_coords[0]:self.x_coords[1],
                 self.y_coords[0]:self.y_coords[1]], self.cmap)
             self.axarr[result_idx, 5].axis('off')
+
+            # Plot RGB Image
             self.axarr[result_idx, 6].imshow(
                 rgb_image[self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]])
             self.axarr[result_idx, 6].axis('off')
 
+            # Plot MultiEarth label
+            if image_idx in Config.index_quant_analysis.keys():
+                label_idx = Config.index_quant_analysis[image_idx]
+                path_label_images = os.path.join(Config.path_sentinel_images, 'deforestation_labels')# index of the label we want to use for comparison
+                # label_image, date_string_label = image_reader.read_image(path=path_label_images, image_idx=label_idx)
+                for file_counter, file_name in enumerate(sorted(os.listdir(path_label_images))):
+                    if file_counter == label_idx:
+                        path_label_i = os.path.join(path_label_images, file_name)
+                        label_image = self.image_reader.read_band(path_label_i)
+                        label_date = file_name[-15:-5]
+                        label_date_string = f'{label_date[0:4]}-{label_date[5:7]}-{label_date[8:10]}'
+                #self.axarr[result_idx, 7].title.set_text(f'L {label_date_string[2:]}')
+                self.axarr[result_idx, 7].imshow(label_image)
+                self.axarr[result_idx, 7].set_ylabel(label_date_string, rotation=0, fontsize=7.5,
+                                                     fontfamily='Times New Roman')  # new plot fontsize changed
+                for axis in ['top', 'bottom', 'left', 'right']:
+                    self.axarr[result_idx, 7].spines[axis].set_linewidth(0)
+                self.axarr[result_idx, 7].yaxis.set_label_coords(1.95, 0.325)  # new plot location changed
+                self.axarr[result_idx, 7].get_yaxis().set_ticks([])
+                self.axarr[result_idx, 7].get_xaxis().set_ticks([])
+            else:
+                #for axis in ['top', 'bottom', 'left', 'right']:
+                    #self.axarr[result_idx, 7].spines[axis].set_linewidth(0)
+                #self.axarr[result_idx, 7].yaxis.set_label_coords(1.95, 0.325)  # new plot location changed
+                self.axarr[result_idx, 7].get_yaxis().set_ticks([])
+                self.axarr[result_idx, 7].get_xaxis().set_ticks([])
+
+            self.plot_legend = ['SIC', 'GMM', 'LR', 'RSIC', 'RGMM', 'RLR', 'RGB', 'Label']
             # Set figure labels
             for idx, label in enumerate(self.plot_legend):
                 self.axarr[0, idx].title.set_fontfamily('Times New Roman')
                 self.axarr[0, idx].title.set_fontsize(12)
                 self.axarr[0, idx].title.set_text(self.plot_legend[idx])
+            for idx, label in enumerate(self.plot_legend): # new plot
+                self.axarr[0, idx].title.set_fontfamily('Times New Roman')
+                self.axarr[0, idx].title.set_fontsize(8)
+                self.axarr[0, idx].title.set_text(self.plot_legend[idx])
+
+            #self.axarr[0, 0].text(-200, 0, 'Acq. date', fontsize=5, fontfamily='Times New Roman')
 
             # Adjust space between subplots
             plt.subplots_adjust(top=0.437, right=0.776)
