@@ -46,7 +46,7 @@ def training_main(image_reader: ReadSentinel2):
     # The threshold considered to compute the labels is the one specified in the configuration file
     labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]),
                                    threshold=Config.threshold_index_labels[Config.scenario])
-    # Discard training images pixels with clouds/cloud shadows with a mask
+    # Discard training image pixels with clouds/cloud shadows by using a mask
     if Config.apply_cloud_mask_training:
         training_images_masked, labels_masked, mask = apply_mask_cloud_det(training_images=training_images, labels=labels)
     else:
@@ -87,9 +87,6 @@ def read_training_images(image_reader: ReadSentinel2):
     """
     # Path where the training images are stored
     path_training_images = os.path.join(Config.path_sentinel_images, Config.scenario, 'training')
-    if Config.scenario == 'multiearth':
-        path_training_images = os.path.join(Config.path_sentinel_images, 'training')
-        #path_training_images = os.path.join(Config.path_sentinel_images, 'training_areas2')
 
     # It is assumed that all the band folders have the same number of stored images.
     # Therefore, to count training images we can check the folder associated to any of the bands.
@@ -182,11 +179,12 @@ def get_gmm_densities(images: np.ndarray, labels: np.ndarray):
             lower_bound_list = dict()
             for class_idx in range(len(Config.classes[Config.scenario])):
                 lower_bound_list[class_idx] = []
-                for num_components_model_selection in range(1, 21):
+                for num_components_model_selection in range(1, 10):
                     gmm_loop = GaussianMixture(n_components=num_components_model_selection).fit(
                         images[labels == class_idx, :-1][
                         0:int(Config.training_data_crop_ratio[Config.scenario] * images.shape[0])])
                     lower_bound_list[class_idx].append(gmm_loop.lower_bound_)
+                    print(num_components_model_selection)
                 plt.figure()
                 plt.plot(lower_bound_list[class_idx])
 
@@ -332,7 +330,7 @@ def plot_labels_training_images(training_images: np.ndarray, bands_index: np.nda
         axs[1, idx].get_yaxis().set_ticks([0, np.max(histogram_list)])
 
     plt.tight_layout()
-
+    #plt.savefig('surrogate_labels_charles_river.pdf', bbox_inches='tight', format='pdf')
 
 def apply_mask_cloud_det(training_images: np.ndarray, labels: np.ndarray):
     """ Applies mask for cloud and cloud shadow detection to the input image.

@@ -166,17 +166,17 @@ def get_labels_from_index(index: np.ndarray, num_classes: int, threshold: float)
         array with labels calculated considering the spectral index values
 
     """
-    if num_classes == 2:
+    if len(threshold) + 1 == 2:
         labels = np.transpose(index.copy())
         np.place(labels, index < threshold,
                  0)  # labels under threshold are set to 0
         np.place(labels, index >= threshold,
                  1)  # labels over threshold are set to 1
-    elif num_classes == 3:
+    elif len(threshold) + 1 == 3:
         labels = np.transpose(index.copy())  # TODO: check if this line can be removed
-        np.place(labels, index < threshold, 0)
-        np.place(labels, index >= threshold, 1)
-        np.place(labels, index >= threshold, 2)
+        np.place(labels, index < threshold[0], 0)
+        np.place(labels, (index >= threshold[0]) & (index <= threshold[1]), 1)
+        np.place(labels, index >= threshold[1], 2)
     return labels
 
 

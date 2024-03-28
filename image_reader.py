@@ -84,8 +84,8 @@ class ReadSentinel2(ImageReader):
         self.dim_x = dim_x
         self.dim_y = dim_y
         if Config.scenario == "multiearth" and Config.shifting_factor_available:
-            Config.shifting_factor_evaluation = pickle.load(open(os.path.join(Config.path_sentinel_images, 'shifting_factor_evaluation.pkl'), 'rb'))
-            Config.shifting_factor_training = pickle.load(open(os.path.join(Config.path_sentinel_images, 'shifting_factor_training.pkl'), 'rb'))
+            Config.shifting_factor_evaluation = pickle.load(open(os.path.join(Config.path_sentinel_images, Config.scenario, 'shifting_factor_evaluation.pkl'), 'rb'))
+            Config.shifting_factor_training = pickle.load(open(os.path.join(Config.path_sentinel_images, Config.scenario, 'shifting_factor_training.pkl'), 'rb'))
 
     def read_band(self, path_band: str):
         """ Reads and returns the band with path *path_band*. Each image is linked to

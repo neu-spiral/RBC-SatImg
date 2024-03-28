@@ -55,6 +55,7 @@ class RBC:
         self.classes = classes
         self.class_marginal_probabilities = class_marginal_probabilities
         self.num_classes = len(classes)
+
         self.model = model
         self.densities = gmm_densities
         # print(f"model name {self.model} and transition probability matrix is {self.transition_matrix}")
@@ -66,7 +67,7 @@ class RBC:
         """
         cls.trained_model = trained_model
 
-    def update_labels(self, image_all_bands: np.ndarray, time_index: int = 0):
+    def update_labels(self, image_all_bands: np.ndarray, time_index: int = 0, image_idx: int = 0):
         """ Returns the prior/likelihood and posterior probabilities for each evaluated model.
 
         Parameters
@@ -88,52 +89,100 @@ class RBC:
             dictionary containing the posterior probabilities for each model
         
         """
-        # Get the index of the pixels that define the scene selected in the configuration file
-        index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
-                                                                scene_id=Config.scene_id)
+        if Config.evaluation_generate_results_likelihood:
+            # Get the index of the pixels that define the scene selected in the configuration file
+            index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
+                                                                    scene_id=Config.test_site)
 
-        # Calculate the prior probability (time_index = 0)
-        # or the likelihood or base model posterior (time_index > 0)
-        # The way to calculate this depends on the model under evaluation
-        # A likelihood value is calculated for each pixel and class
-        base_model_predicted_probabilities = self.calculate_prediction(image_all_bands=image_all_bands)  # return this value for histogram
-        # analysis 
 
-        #  At time instant 0, the prior probability is equal to:
-        #   - the model prediction, in the case of having a pretrained model
-        #   - the softmax probability, otherwise (this is what is returned when calculating the prediction)
-        # *likelihood* corresponds to the likelihood or the base model posterior
-        if time_index == 0:
-            self.prior_probability = base_model_predicted_probabilities
+            # Calculate the prior probability (time_index = 0)
+            # or the likelihood or base model posterior (time_index > 0)
+            # The way to calculate this depends on the model under evaluation
+            # A likelihood value is calculated for each pixel and class
+            base_model_predicted_probabilities = self.calculate_prediction(image_all_bands=image_all_bands)  # return this value for histogram
+            # analysis
 
-        """
-        # TODO: This line was added to avoid a dimensional error, but it should be checked whether it could be removed
-        if np.ndim(likelihood) == 3:
-            likelihood = likelihood.reshape(self.total_num_pixels, self.num_classes)
-        """
+            #  At time instant 0, the prior probability is equal to:
+            #   - the model prediction, in the case of having a pretrained model
+            #   - the softmax probability, otherwise (this is what is returned when calculating the prediction)
+            # *likelihood* corresponds to the likelihood or the base model posterior
+            if time_index == 0:
+                self.prior_probability = base_model_predicted_probabilities.copy()
 
-        # Image with the posterior probabilities for each pixel is calculated
-        # Only the pixels from the chosen scene are considered
-        # The calculate_posterior function is applied to all the rows
-        # Each row corresponds to all the bands values for a specific pixel
-        """
-        del_l = np.apply_along_axis(self.calculate_posterior, 1, image_all_bands[index_pixels_of_interest,], likelihood, self.model)
-        del_l = del_l.reshape((del_l.shape[0], self.num_classes))
-        self.posterior_probability[index_pixels_of_interest] = del_l  # we just save the sub-scene pixels
+            """
+            # TODO: This line was added to avoid a dimensional error, but it should be checked whether it could be removed
+            if np.ndim(likelihood) == 3:
+                likelihood = likelihood.reshape(self.total_num_pixels, self.num_classes)
+            """
 
-        """
-        # Initialize posterior probability
-        posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
-        # A posterior value is calculated for each pixel and class
-        # Only pixels belonging to the sub-scene are considered
-        for pixel_i in index_pixels_of_interest:
-            posterior_probability[pixel_i, :] = self.calculate_posterior(bands=image_all_bands[pixel_i, :], base_model_predicted_probabilities=base_model_predicted_probabilities, pixel_position=pixel_i)
+            # Image with the posterior probabilities for each pixel is calculated
+            # Only the pixels from the chosen scene are considered
+            # The calculate_posterior function is applied to all the rows
+            # Each row corresponds to all the bands values for a specific pixel
+            """
+            del_l = np.apply_along_axis(self.calculate_posterior, 1, image_all_bands[index_pixels_of_interest,], likelihood, self.model)
+            del_l = del_l.reshape((del_l.shape[0], self.num_classes))
+            self.posterior_probability[index_pixels_of_interest] = del_l  # we just save the sub-scene pixels
+    
+            """
+            # Initialize posterior probability
+            posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
+            # A posterior value is calculated for each pixel and class
+            # Only pixels belonging to the sub-scene are considered
+            # for pixel_i in index_pixels_of_interest:
+            #     posterior_probability[pixel_i, :] = self.calculate_posterior(bands=image_all_bands[pixel_i, :], base_model_predicted_probabilities=base_model_predicted_probabilities, pixel_position=pixel_i)
+            if time_index == 0:
+                marginal_probs = np.array(Config.class_marginal_probabilities[Config.scenario])
+                marginal_probs = np.repeat(marginal_probs.reshape(1, 2), base_model_predicted_probabilities.shape[0], axis=0)
+                self.prior_probability = marginal_probs
 
-        # Calculate the class predictions
-        # Values in the predictions correspond to the index of the class that is more probable
-        recursive_class_prediction = posterior_probability.argmax(axis=1)
-        base_model_class_prediction = base_model_predicted_probabilities.argmax(axis=1)
+            # Calculate the class predictions
+            # Values in the predictions correspond to the index of the class that is more probable
+            recursive_class_prediction = posterior_probability.argmax(axis=1)
+            base_model_class_prediction = base_model_predicted_probabilities.argmax(axis=1)
 
+            #plt.figure(),plt.imshow(recursive_class_prediction.reshape(2229,3341)[1400:1550,1540:1650].reshape(150,110))
+            #plt.figure(), plt.imshow(base_model_class_prediction.reshape(2229,3341)[1400:1550,1540:1650].reshape(150,110))
+            #plt.figure(), plt.imshow(base_model_class_prediction.reshape(2229, 3341)[1400:1550, 1540:1650].reshape(150, 110)-recursive_class_prediction.reshape(2229,3341)[1400:1550,1540:1650].reshape(150,110))
+            pickle_file_path_likelihood = os.path.join(Config.path_evaluation_results, "classification",
+                                            f"{Config.scenario}_{Config.test_site}", "likelihoods",
+                                            f"image_{image_idx}_model_{self.model}_likelihood")
+            pickle.dump(base_model_predicted_probabilities, open(pickle_file_path_likelihood, 'wb'))
+        else:
+            # Get the index of the pixels that define the scene selected in the configuration file
+            index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
+                                                                    scene_id=Config.test_site)
+
+            pickle_file_path_likelihood = os.path.join(Config.path_evaluation_results, "classification",
+                                            f"{Config.scenario}_{Config.test_site}", "likelihoods",
+                                            f"image_{image_idx}_model_{self.model}_likelihood")
+            base_model_predicted_probabilities = pickle.load(open(pickle_file_path_likelihood, 'rb'))
+
+            #  At time instant 0, the prior probability is equal to:
+            #   - the model prediction, in the case of having a pretrained model
+            #   - the softmax probability, otherwise (this is what is returned when calculating the prediction)
+            # *likelihood* corresponds to the likelihood or the base model posterior
+            if time_index == 0:
+                marginal_probs = np.array(Config.class_marginal_probabilities[Config.scenario])
+                marginal_probs = np.repeat(marginal_probs.reshape(1, 2), base_model_predicted_probabilities.shape[0], axis=0)
+                self.prior_probability = marginal_probs
+
+
+            # Initialize posterior probability
+            posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
+            # A posterior value is calculated for each pixel and class
+            # Only pixels belonging to the sub-scene are considered
+            for pixel_i in index_pixels_of_interest:
+                posterior_probability[pixel_i, :] = self.calculate_posterior(bands=image_all_bands[pixel_i, :], base_model_predicted_probabilities=base_model_predicted_probabilities, pixel_position=pixel_i)
+
+            # Calculate the class predictions
+            # Values in the predictions correspond to the index of the class that is more probable
+            recursive_class_prediction = posterior_probability.argmax(axis=1)
+            base_model_class_prediction = base_model_predicted_probabilities.argmax(axis=1)
+        # base_model_class_prediction = classification result from instantaneous classifier
+        # recursive_class_prediction = classification result from RBC
+        # base_model_predicted_probabilities = probability values from instantaneous classifier
+        # self.prior_probability = probability values from RBC (posterior probabilities)
         return base_model_class_prediction, recursive_class_prediction, base_model_predicted_probabilities, self.prior_probability
 
     def calculate_prediction(self, image_all_bands: np.ndarray):
@@ -163,7 +212,7 @@ class RBC:
             likelihood = get_scaled_index(spectral_index=spectral_index, num_classes=self.num_classes)
 
             for idx in range(likelihood.shape[0]):
-                y = likelihood[idx] + Config.norm_constant
+                y = likelihood[idx] + Config.norm_constant_SIC[Config.test_site]
                 y = y / sum(y)
                 likelihood[idx] = y
 
@@ -188,7 +237,7 @@ class RBC:
             likelihood = np.concatenate((water_map, 1 - water_map), axis=1)
 
             for idx in range(likelihood.shape[0]):
-                y = likelihood[idx] + Config.norm_constant
+                y = likelihood[idx] + Config.norm_constant_DL[Config.test_site]
                 y = y / sum(y)
                 likelihood[idx] = y
 
@@ -211,12 +260,15 @@ class RBC:
             water_map = watnet_infer_main(rsimg=image_watnet_bands,
                                           path_model=Config.path_watnet_pretrained_model).reshape(-1, 1)
             likelihood = np.concatenate((water_map, 1 - water_map), axis=1)
-            likelihood_copy = likelihood.copy().astype(np.float)
+            #likelihood_copy = likelihood.copy().astype(np.float)
+            likelihood_copy = likelihood.copy()
+            likelihood_aux = np.ones(shape=(likelihood.shape[0],likelihood.shape[1]))
             for idx in range(likelihood.shape[0]):
-                y = likelihood[idx] + Config.norm_constant
+                y = likelihood[idx] + Config.norm_constant_DL[Config.test_site]
                 y = y / sum(y)
                 likelihood_copy[idx] = y
-            likelihood = likelihood_copy
+                likelihood_aux[idx] = y
+            likelihood = likelihood_aux
 
         # --------------------------------------------------------------------
         # Logistic Regression (LR)
@@ -228,7 +280,7 @@ class RBC:
             likelihood = self.trained_model.predict_proba(image_all_bands[:, :-1])
 
             for idx in range(likelihood.shape[0]):
-                y = likelihood[idx] + Config.norm_constant_LR
+                y = likelihood[idx] + Config.norm_constant_LR[Config.test_site]
                 y = y / sum(y)
                 likelihood[idx] = y
 
@@ -246,7 +298,7 @@ class RBC:
             sum_den = np.sum(likelihood, axis=1).reshape(self.total_num_pixels, 1)  # reshape to transpose vector
             likelihood = np.divide(likelihood, sum_den).astype('float32')
             for idx in range(likelihood.shape[0]):
-                y = likelihood[idx] + Config.norm_constant_GMM
+                y = likelihood[idx] + Config.norm_constant_GMM[Config.test_site]
                 y = y / sum(y)
                 likelihood[idx] = y
 
@@ -284,17 +336,107 @@ class RBC:
             # Logistic Regression, Spectral Index Classifier (SIC), Deep Learning Models
             # --------------------------------------------------------------------
             # Discriminative prediction
+            prediction_pixel = base_model_predicted_probabilities[pixel_position] / np.sum(base_model_predicted_probabilities[pixel_position])
+
+            # Loop to compute posterior for each class
+            for c_t in range(self.num_classes):
+                # Loop to compute first summation (over C_{t-1})
+                for c_t_1 in range(self.num_classes):
+
+                    # Denominator for C_{t-1}:
+                    denominator_sum = 0
+                    # Loop to compute second summation (over C_t^prime)
+                    for c_t_p in range(self.num_classes):
+                        third_summation = 0
+                        for c_t_1_p in range(self.num_classes):
+                            third_summation += self.transition_matrix[c_t_p, c_t_1_p] * self.prior_probability[pixel_position, c_t_1_p]
+                        denominator_sum += (prediction_pixel[c_t_p] / self.class_marginal_probabilities[c_t_p]) * third_summation
+                    # Numerator for C_{t-1}:
+                    numerator = self.transition_matrix[c_t, c_t_1] * self.prior_probability[pixel_position, c_t_1]
+
+                    # Put all together
+                    post_return[c_t, c_t_1] = numerator / denominator_sum
+                post_return[c_t, :] = post_return[c_t, :] * (prediction_pixel[c_t] / self.class_marginal_probabilities[c_t])
+
+           # These reshaping operations might be necessary only for some of the methods
+            # TODO: check
+            posterior = np.sum(post_return, axis=1).reshape(-1, )
+            self.prior_probability[pixel_position] = (posterior / np.sum(posterior)).reshape(self.prior_probability[pixel_position].shape)
+        else:
+            # --------------------------------------------------------------------
+            # Recursive Bayesian Generative Model (RBGM) - Paper Equation (3)
+            # Gaussian Mixture Model (GMM)
+            # --------------------------------------------------------------------
+
+            #lik_lb = likelihood[pixel_position] / np.sum(likelihood[pixel_position])
+            likelihood_pixel = base_model_predicted_probabilities[pixel_position] / np.sum(base_model_predicted_probabilities[pixel_position])  # in this case, corresponds to p(pixel|class)
+
+            # Loop to compute posterior for each class
+            for c_t in range(self.num_classes):
+                # Loop to compute first summation (over C_{t-1})
+                for c_t_1 in range(self.num_classes):
+                    # numerator
+                    numerator = self.transition_matrix[c_t, c_t_1] * self.prior_probability[pixel_position, c_t_1]
+                    # denominator
+                    denominator_sum = 0
+                    for c_t_p in range(self.num_classes):
+                        third_summation = 0
+                        for c_t_1_p in range(self.num_classes):
+                            third_summation += self.transition_matrix[c_t_p, c_t_1_p] * self.prior_probability[pixel_position, c_t_1_p]
+                        denominator_sum += (likelihood_pixel[c_t_p]) * third_summation
+                    # Put together
+                    post_return[c_t, c_t_1] = numerator / denominator_sum  # fraction
+                post_return[c_t, :] = post_return[c_t, :] * (likelihood_pixel[c_t])  # multiply fraction by the likelihood
+            posterior = np.sum(post_return, axis=1)  # First summation is computed here
+            self.prior_probability[pixel_position] = (posterior / np.sum(posterior))  # The prior for the future time instant is the current posterior
+        posterior = posterior / np.sum(posterior)
+        return posterior
+
+    def calculate_posterior_old(self, bands: np.ndarray, base_model_predicted_probabilities: np.ndarray, pixel_position: int):
+        """ Returns the posterior probabilities for each evaluated model.
+        This function is called pixel by pixel.
+        # This function is called row by row with the np.apply_along_axis function.
+
+        Parameters
+        ----------
+        bands: np.ndarray
+            band values for the evaluated pixel
+        likelihood : np.ndarray
+            prior probabilities/likelihood for each class
+        pixel_position: int
+            position of the pixel being evaluated (as the function is called row by row)
+
+        Returns
+        -------
+        posterior : np.ndarray
+            array containing the posterior probability for each class
+
+        """
+        # Posterior probability is calculated here. eq1.
+        # self.class_marginal_probabilities[ct_p] = marginal probability
+        post_return = np.zeros(shape=[self.num_classes, self.num_classes])
+        if self.model != "GMM":
+            # --------------------------------------------------------------------
+            # Recursive Bayesian Discriminative Model (RBDM) - Paper Equation (5)
+            # Logistic Regression, Spectral Index Classifier (SIC), Deep Learning Models
+            # --------------------------------------------------------------------
+            # Discriminative prediction
             prediction_pixel = base_model_predicted_probabilities[pixel_position]  # in this case, corresponds to p(class|pixel)
             # Loop to compute posterior for each class
             for c_t in range(self.num_classes):
                 # Loop to compute first summation (over C_{t-1})
                 for c_t_1 in range(self.num_classes):
+
+                    # Denominator for C_{t-1}:
                     denominator_sum = 0
                     # Loop to compute second summation (over C_t^prime)
                     for c_t_p in range(self.num_classes):
                         denominator_sum += (prediction_pixel[c_t_p] / self.class_marginal_probabilities[c_t_p]) * self.transition_matrix[c_t_p, c_t_1]
+
+                    # Numerator for C_{t-1}:
                     numerator = self.transition_matrix[c_t, c_t_1] * self.prior_probability[pixel_position, c_t_1]
                     post_return[c_t, c_t_1] = numerator / denominator_sum
+
                 post_return[c_t, :] = post_return[c_t, :] * (prediction_pixel[c_t] / self.class_marginal_probabilities[c_t])
             # These reshaping operations might be necessary only for some of the methods
             # TODO: check
@@ -344,7 +486,7 @@ def get_rbc_objects(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
                   "Index models")
 
     # Extract the desired settings from the configuration file
-    transition_matrix = Config.transition_matrix[Config.scenario]
+    # transition_matrix = Config.transition_matrix[Config.scenario]
     classes = Config.classes[Config.scenario]
     class_marginal_probabilities = Config.class_marginal_probabilities[Config.scenario]
 
@@ -352,25 +494,55 @@ def get_rbc_objects(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
     rbc_objects = {}
 
     # RBC object for GMM model
-    transition_matrix =np.array([1 - Config.eps_GMM, Config.eps_GMM, Config.eps_GMM, 1 - Config.eps_GMM]).reshape(2, 2)
+    # we change the transition matrix when changing the algorithm because the epsilon is different
+    eps=Config.eps_GMM[Config.test_site]
+    if Config.scenario == "charles_river_3classes":
+        transition_matrix = np.array(
+            [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+            3, 3)
+    elif Config.test_site == 2:
+        eps_aux = Config.eps_GMM_adaptive[Config.test_site]
+        transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+    else:
+        transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
     rbc_objects["GMM"] = RBC(transition_matrix=transition_matrix, classes=classes, gmm_densities=gmm_densities,
                              class_marginal_probabilities=class_marginal_probabilities, model="GMM")
 
-    # RBC object for Scaled Index model
-    transition_matrix =np.array([1 - Config.eps, Config.eps, Config.eps, 1 - Config.eps]).reshape(2, 2)
+    # RBC object for Scaled Index model and Deep learning models
+    # we change the transition matrix when changing the algorithm because the epsilon is different
+    eps = Config.eps[Config.test_site]
+    if Config.scenario == "charles_river_3classes":
+        transition_matrix = np.array(
+            [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+            3, 3)
+    elif Config.test_site == 2:
+        eps_aux = Config.eps[Config.test_site]
+        transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+    else:
+        transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
     rbc_objects["Scaled Index"] = RBC(transition_matrix=transition_matrix, classes=classes,
                                       gmm_densities=gmm_densities,
                                       class_marginal_probabilities=class_marginal_probabilities, model="Scaled Index")
 
     # RBC object for Logistic Regression model
-    transition_matrix = np.array([1 - Config.eps_LR, Config.eps_LR, Config.eps_LR, 1 - Config.eps_LR]).reshape(2, 2)
+    # we change the transition matrix when changing the algorithm because the epsilon is different
+    eps = Config.eps_LR[Config.test_site]
+    if Config.scenario == "charles_river_3classes":
+        transition_matrix = np.array(
+            [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+            3, 3)
+    elif Config.test_site == 2:
+        eps_aux = Config.eps_LR_adaptive[Config.test_site]
+        transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+    else:
+        transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
     rbc_objects["Logistic Regression"] = RBC(transition_matrix=transition_matrix, classes=classes,
                                              gmm_densities=gmm_densities, class_marginal_probabilities=class_marginal_probabilities,
                                              model="Logistic Regression")
     rbc_objects["Logistic Regression"].set_lr_trained_model(trained_model=trained_lr_model)
 
     # Benchmark Deep Learning models for the water mapping experiment
-    if Config.scenario == "oroville_dam":
+    if Config.scenario == "oroville_dam" or Config.scenario =="charles_river":
         # RBC object for DeepWaterMap algorithm
         rbc_objects["DeepWaterMap"] = RBC(transition_matrix=transition_matrix, classes=classes,
                                           gmm_densities=gmm_densities, class_marginal_probabilities=class_marginal_probabilities,

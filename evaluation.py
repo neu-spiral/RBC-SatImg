@@ -6,9 +6,12 @@ import numpy as np
 
 from image_reader import ReadSentinel2
 import matplotlib.pyplot as plt
-from configuration import Config, Debug
+from configuration import Config, Debug, Visual
 from bayesian_recursive import RBC, get_rbc_objects
-from plot_results.plot_results_classification import ClassificationResultsFigure
+from plot_figures.plot_results_classification import ClassificationResultsFigure
+from plot_figures.classification_figure import ClassificationFigure
+from plot_figures.appendix_figure import AppendixFigure
+from plot_figures.quantitative_analysis.update_table import update_table, get_date_statistic
 from typing import List
 from sklearn.mixture import GaussianMixture
 from sklearn.linear_model import LogisticRegression
@@ -44,18 +47,10 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
         dictionary containing the posterior probabilities for each model
 
     """
-    # Get the relative path where the pickle file containing evaluation plot_results
-    if Config.scenario == 'charles_river':
-        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
-                                        f'{Config.scenario}_{Config.scene_id}',
-                                        f'{Config.scenario}_{Config.scene_id}_image_{image_index}_epsilon_{Config.eps}.pkl')
-    elif Config.scenario == 'multiearth':
-        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
-                                        f'{Config.scenario}_{Config.scene_id}_image_{image_index}_epsilon_{Config.eps}.pkl')
-    else:
-        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
-                                        f'{Config.scenario}_{Config.scene_id}',
-                                        f'{Config.scenario}_{Config.scene_id}_image_{image_index}_epsilon_{Config.eps}_norm_constant_{Config.norm_constant}.pkl')
+    # Get the relative path where the pickle file containing evaluation plot_figures
+    pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                    f'{Config.scenario}_{Config.test_site}', 'posteriors',
+                                    f'{Config.scenario}_{Config.test_site}_image_{image_index}_confID_{Config.conf_id}.pkl')
 
     logging.debug(f"Evaluation results are generated for image {image_index}")
 
@@ -70,63 +65,129 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
     dim_x = Config.image_dimensions[Config.scenario]['dim_x']
     dim_y = Config.image_dimensions[Config.scenario]['dim_y']
 
+    # Benchmark Deep Learning models for the water mapping experiment
+    if Config.scenario == "oroville_dam" or Config.scenario == "charles_river":
+
+        # WatNet Algorithm
+        # Update transition matrix
+        eps = Config.eps[Config.test_site]
+        if Config.scenario == "charles_river_3classes":
+            transition_matrix = np.array(
+                [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+                3, 3)
+        elif Config.test_site in [1, 2, 3]:
+            eps_aux = Config.eps_DWM_adaptive[Config.test_site]
+            transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+        else:
+            transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+        rbc_objects["WatNet"].transition_matrix = transition_matrix
+        # Evaluate
+        base_model_predicted_class["WatNet"], posterior["WatNet"], prediction_float["WatNet"], posterior_probabilities[
+            "WatNet"] = rbc_objects["WatNet"].update_labels(
+            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
+        posterior["WatNet"] = posterior["WatNet"].reshape(dim_x, dim_y)
+        base_model_predicted_class["WatNet"] = base_model_predicted_class["WatNet"].reshape(dim_x, dim_y)
+
+        # DeepWaterMap Algorithm
+        # Update transition matrix
+        eps = Config.eps[Config.test_site]
+        if Config.scenario == "charles_river_3classes":
+            transition_matrix = np.array(
+                [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+                3, 3)
+        elif Config.test_site in [1, 2, 3]:
+            eps_aux = Config.eps_DWM_adaptive[Config.test_site]
+            transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+        else:
+            transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+        rbc_objects["DeepWaterMap"].transition_matrix = transition_matrix
+        # Evaluate
+        base_model_predicted_class["DeepWaterMap"], posterior["DeepWaterMap"], prediction_float["DeepWaterMap"], \
+        posterior_probabilities["DeepWaterMap"] = rbc_objects[
+            "DeepWaterMap"].update_labels(
+            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
+        posterior["DeepWaterMap"] = posterior["DeepWaterMap"].reshape(dim_x, dim_y)
+        base_model_predicted_class["DeepWaterMap"] = base_model_predicted_class["DeepWaterMap"].reshape(dim_x, dim_y)
+
     # GMM Model
+    # Update transition matrix
+    eps = Config.eps_GMM[Config.test_site]
+    if Config.scenario == "charles_river_3classes":
+        transition_matrix = np.array(
+            [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+            3, 3)
+    elif Config.test_site in [1, 2, 3]:
+        eps_aux = Config.eps_GMM_adaptive[Config.test_site]
+        transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+    else:
+        transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+    rbc_objects["GMM"].transition_matrix = transition_matrix
+    # Evaluate
     base_model_predicted_class["GMM"], posterior["GMM"], prediction_float["GMM"], posterior_probabilities["GMM"] = \
-    rbc_objects["GMM"].update_labels(
-        image_all_bands=image_all_bands,
-        time_index=time_index)
+        rbc_objects["GMM"].update_labels(
+            image_all_bands=image_all_bands,
+            time_index=time_index, image_idx=image_index)
     posterior["GMM"] = posterior["GMM"].reshape(dim_x, dim_y)
     base_model_predicted_class["GMM"] = base_model_predicted_class["GMM"].reshape(dim_x, dim_y)
     # plt.figure(), plt.imshow(likelihood["GMM"])
     # plt.figure(), plt.imshow(posterior["GMM"])
 
     # Scaled Index Model
+    # Update transition matrix
+    eps = Config.eps[Config.test_site]
+    if Config.scenario == "charles_river_3classes":
+        transition_matrix = np.array(
+            [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+            3, 3)
+    elif Config.test_site in [1, 2, 3]:
+        eps_aux = Config.eps[Config.test_site]
+        transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+    else:
+        transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+    rbc_objects["Scaled Index"].transition_matrix = transition_matrix
+    # Evaluate
     base_model_predicted_class["Scaled Index"], posterior["Scaled Index"], prediction_float["Scaled Index"], \
     posterior_probabilities["Scaled Index"] = rbc_objects[
         "Scaled Index"].update_labels(
-        image_all_bands=image_all_bands, time_index=time_index)
+        image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
     posterior["Scaled Index"] = posterior["Scaled Index"].reshape(dim_x, dim_y)
     base_model_predicted_class["Scaled Index"] = base_model_predicted_class["Scaled Index"].reshape(dim_x, dim_y)
     # plt.figure(), plt.imshow(likelihood["Scaled Index"])
     # plt.figure(), plt.imshow(posterior["Scaled Index"])
 
     # Logistic Regression Model
+    # Update transition matrix
+    eps = Config.eps_LR[Config.test_site]
+    if Config.scenario == "charles_river_3classes":
+        transition_matrix = np.array(
+            [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+            3, 3)
+    elif Config.test_site in [1, 2, 3]:
+        eps_aux = Config.eps_LR_adaptive[Config.test_site]
+        transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+    else:
+        transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+    rbc_objects["Logistic Regression"].transition_matrix = transition_matrix
+    # Evaluate
     base_model_predicted_class["Logistic Regression"], posterior["Logistic Regression"], prediction_float[
         "Logistic Regression"], posterior_probabilities["Logistic Regression"] = \
         rbc_objects[
             "Logistic Regression"].update_labels(
-            image_all_bands=image_all_bands, time_index=time_index)
+            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
     posterior["Logistic Regression"] = posterior["Logistic Regression"].reshape(dim_x, dim_y)
     base_model_predicted_class["Logistic Regression"] = base_model_predicted_class["Logistic Regression"].reshape(dim_x,
                                                                                                                   dim_y)
     # plt.figure(), plt.imshow(likelihood["Logistic Regression"])
     # plt.figure(), plt.imshow(posterior["Logistic Regression"])
 
-    # Benchmark Deep Learning models for the water mapping experiment
-    if Config.scenario == "oroville_dam":
-        # DeepWaterMap Algorithm
-        base_model_predicted_class["DeepWaterMap"], posterior["DeepWaterMap"], prediction_float["DeepWaterMap"], \
-        posterior_probabilities["DeepWaterMap"] = rbc_objects[
-            "DeepWaterMap"].update_labels(
-            image_all_bands=image_all_bands, time_index=time_index)
-        posterior["DeepWaterMap"] = posterior["DeepWaterMap"].reshape(dim_x, dim_y)
-        base_model_predicted_class["DeepWaterMap"] = base_model_predicted_class["DeepWaterMap"].reshape(dim_x, dim_y)
-
-        # WatNet Algorithm
-        base_model_predicted_class["WatNet"], posterior["WatNet"], prediction_float["WatNet"], posterior_probabilities[
-            "WatNet"] = rbc_objects["WatNet"].update_labels(
-            image_all_bands=image_all_bands, time_index=time_index)
-        posterior["WatNet"] = posterior["WatNet"].reshape(dim_x, dim_y)
-        base_model_predicted_class["WatNet"] = base_model_predicted_class["WatNet"].reshape(dim_x, dim_y)
-
     # Dump data into pickle if this image index belongs to the list containing indices of images to store
-    if image_index in Config.index_images_to_store[Config.scene_id] and Config.evaluation_store_results:
+    if image_index in Config.index_images_to_store[Config.test_site] and Config.evaluation_store_results:
         pickle.dump([base_model_predicted_class, posterior], open(pickle_file_path, 'wb'))
 
     # Dump data into pickle for analysis of the prediction histogram
     if Debug.pickle_histogram:
-        pickle_file_path = os.path.join(Config.path_histogram_prediction, f'{Config.scenario}_{Config.scene_id}',
-                                        f'{Config.scenario}_{Config.scene_id}_image_{image_index}_epsilon_{Config.eps}_norm_constant_{Config.norm_constant}.pkl')
+        pickle_file_path = os.path.join(Config.path_histogram_prediction, f'{Config.scenario}_{Config.test_site}',
+                                        f'{Config.scenario}_{Config.test_site}_image_{image_index}_epsilon_{Config.eps}_norm_constant_{Config.norm_constant}.pkl')
         pickle.dump([prediction_float, date_string], open(pickle_file_path, 'wb'))
 
     """
@@ -158,7 +219,7 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
 
     Returns
     -------
-    None (plots plot_results for the time indexes specified in the configuration file)
+    None (plots plot_figures for the time indexes specified in the configuration file)
 
     """
 
@@ -168,8 +229,10 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
     # Read the images in the evaluation folder
     # Path where evaluation images are stored
     logging.debug("Start Evaluation")
-    path_evaluation_images = os.path.join(Config.path_sentinel_images, 'evaluation')
-    #path_evaluation_images = "/Users/helena/Documents/Research/Recursive_Bayesian_Image_Classification/MultiEarth2023/Dataset/sent2/-54.58_-3.43"
+
+    # Path where the evaluation images are stored
+    path_evaluation_images = os.path.join(Config.path_sentinel_images, Config.scenario, 'evaluation')
+    # path_evaluation_images = "/Users/helena/Documents/Research/Recursive_Bayesian_Image_Classification/MultiEarth2023/Dataset/sent2/-54.58_-3.43"
 
     # It is assumed that all the band folders have the same number of stored images.
     # Therefore, to count training images we can check the folder associated to any of the bands.
@@ -185,218 +248,115 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
         num_evaluation_images = Config.num_evaluation_images_hardcoded
     logging.debug(f"Number of available images for evaluation = {num_evaluation_images}")
 
-    # Initialize the time instant parameter *time_index*
     time_index = 0
+    date_string_list = []  # initialize list to store Evaluation dates
 
-    if Config.scenario == 'multiearth':
-        path_label_images = os.path.join(Config.path_sentinel_images, 'deforestation_labels')
-        # The classifier is applied to all the bands of all the images to be read
-        # Each image is linked to one specific date
-        # If specified in the configuration file, we check images that pass the cloud detection and index thresholds,
-        # store their indices, and then we process them in the second loop
-        if Config.filter_evaluation_images:
-            Config.index_images_to_evaluate[Config.scene_id] = []
-            for image_idx_loop in range(Config.offset_eval_images[Config.scenario], num_evaluation_images):
-                # All bands of the image with index *image_idx* are stored in *image_all_bands*
-                image_all_bands, date_string = image_reader.read_image(path=path_evaluation_images,
-                                                                       image_idx=image_idx_loop)
-                if check_cloud_threshold(image=image_all_bands,
-                                         image_date=date_string) and Config.evaluation_check_index_threshold:
-                    print('****** ACCEPTED IMAGE with index ' + str(image_idx_loop))
-                    # If image cloud percentage is not above the threshold, we consider this image for evaluation
-                    # ***** Second check: index threshold
-                    if check_index_threshold(image=image_all_bands, rbc_objects=rbc_objects, date=date_string):
-                        Config.index_images_to_evaluate[Config.scene_id].append(image_idx_loop)
-            # num_evaluation_images = len(Config.index_images_to_evaluate[Config.scene_id])
-        Config.index_images_to_store[Config.scene_id] = Config.index_images_to_evaluate[Config.scene_id]
+    if Visual.class_fig_settings['plot']:
+        results_figure = ClassificationFigure()
+    if Visual.appendix_fig_settings['plot']:
+        appendix_figure = AppendixFigure()
 
-        # Evaluation Loop
-        for image_idx in Config.index_images_to_evaluate[Config.scene_id]:
-            # All bands of the image with index *image_idx* are stored in *image_all_bands*
-            image_all_bands, date_string = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx, shift_option="evaluation")
+    # Loop over every image (i.e., date)
+    for image_idx in Config.index_images_to_evaluate[Config.test_site]:
 
-            if not Debug.check_dates:
-                # TODO: check what index and labels are used for
-                # Calculate and add the spectral index for all bands
-                index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
-                image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
+        # All bands of the image with index *image_idx* are stored in *image_all_bands*
+        image_all_bands, date_string = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx,
+                                                               shift_option="None")
 
-                # Get labels from the spectral index values
-                labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]),
-                                               threshold=Config.threshold_index_labels[Config.scenario])
+        # If Debug.check_dates is False, we Evaluate the models.
+        # Otherwise, we only print image dates
+        if not Debug.check_dates:
 
-                # Evaluate the 3 models for one date
-                if Config.evaluation_generate_results:
-                    # If results need to be generated again, we need to evaluate considering all the dates, regardless of
-                    # how many dates we want to plot
-                    predicted_class, posterior, predicted_probabilities, posterior_probabilities = evaluate_models(
-                        image_all_bands=image_all_bands, rbc_objects=rbc_objects,
-                        time_index=time_index, image_index=image_idx,
-                        date_string=date_string)
-                else:
-                    print(
-                        'No evaluation results are generated - Please make sure sure results have been previously generated')
-                    path_results = os.path.join(Config.path_evaluation_results, "classification")
-                    pickle_file_path = os.path.join(path_results,
-                                                    f"{Config.scenario}_{Config.scene_id}_image_{image_idx}_epsilon_{Config.eps}.pkl")
-                    [predicted_class, posterior] = pickle.load(open(pickle_file_path, 'rb'))
+            # Calculate spectral index for all bands and add it to image_all_bands vector
+            index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
+            image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
 
-                # Plot results for this image
-                print(f"plotting results for image with index {image_idx}")
-                if image_idx in Config.index_images_to_plot[Config.scene_id]:
-                    # User wants to plot this image
-                    if image_idx == Config.index_images_to_plot[Config.scene_id][0]:
-                        # This is the first image to be plotted
-                        # Figure is created
-                        results_figure = ClassificationResultsFigure()
-                        results_figure.create_figure()
-                    result_idx = Config.index_images_to_plot[Config.scene_id].index(image_idx)
-                    """
-                    results_figure.plot_results_one_date(image_idx=image_idx, image_all_bands=image_all_bands,
-                                                         date_string=date_string, base_model_predicted_class=predicted_class,
-                                                         posterior=posterior, result_idx=result_idx, base_model_predicted_probabilities=predicted_probabilities)
-                    """
-                    results_figure.plot_results_one_date(image_idx=image_idx, image_all_bands=image_all_bands,
-                                                         date_string=date_string,
-                                                         base_model_predicted_class=predicted_class,
-                                                         posterior=posterior, result_idx=result_idx)
-                    # **************************************************************
-                    # ********************** QUANTITATIVE ANALYSIS STARTS
-                    # **************************************************************
+            # [GENERATE or LOAD results]
+            if Config.evaluation_generate_results:
+                predicted_class, posterior, predicted_probabilities, posterior_probabilities = evaluate_models(
+                    image_all_bands=image_all_bands, rbc_objects=rbc_objects,
+                    time_index=time_index, image_index=image_idx,
+                    date_string=date_string)
+            else:
+                [predicted_class, posterior] = load_results(image_idx=image_idx)
 
-                    if image_idx in Config.index_quant_analysis and Config.conduct_quantitative_analysis:
-                        if image_idx == list(Config.index_quant_analysis.keys())[0]:
-                            quantitative_results_figure = ClassificationResultsFigure()
-                            quantitative_results_figure.create_quantitative_results_figure()
-                            quantitative_results_plotted = 0
-                            quantitative_results_output = dict()
-                        label_idx = Config.index_quant_analysis[image_idx] # index of the label we want to use for comparison
-                        #label_image, date_string_label = image_reader.read_image(path=path_label_images, image_idx=label_idx)
-                        for file_counter, file_name in enumerate(sorted(os.listdir(path_label_images))):
-                            for col in range(0,13):
-                                for axis in ['top', 'bottom', 'left', 'right']:
-                                    quantitative_results_figure.axarr[quantitative_results_plotted, col].spines[axis].set_linewidth(0)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, col].get_yaxis().set_ticks([])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, col].get_xaxis().set_ticks([])
-                            if file_counter == label_idx:
-                                quantitative_results_output[label_idx] = dict()
-                                path_label_i = os.path.join(path_label_images, file_name)
-                                label_image = image_reader.read_band(path_label_i)
-                                label_date_string = file_name[-15:-5]
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 0].imshow(label_image)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 0].title.set_text(f'L {label_date_string[2:]}')
-                                # SIC
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 1].imshow(predicted_class['Scaled Index'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 1].title.set_text(
-                                    f'SIC {date_string[5:]}')
-                                class_map, class_acc = quantitative_results_figure.get_quantitative_results(label_image=label_image, class_labels=predicted_class['Scaled Index'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 2].imshow(class_map)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 2].title.set_text(
-                                    f'{np.round(class_acc*100,3)}%')
-                                # RSIC
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 3].imshow(posterior['Scaled Index'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 3].title.set_text(
-                                    f'RSIC {date_string[5:]}')
-                                class_map, class_acc = quantitative_results_figure.get_quantitative_results(label_image=label_image, class_labels=posterior['Scaled Index'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 4].imshow(class_map)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 4].title.set_text(
-                                    f'{np.round(class_acc*100,3)}%')
-                                quantitative_results_output[label_idx]['RSIC'] = class_acc
-                                # GMM
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 5].imshow(predicted_class['GMM'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 5].title.set_text(
-                                    f'GMM {date_string[5:]}')
-                                class_map, class_acc = quantitative_results_figure.get_quantitative_results(label_image=label_image, class_labels=predicted_class['GMM'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 6].imshow(class_map)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 6].title.set_text(
-                                    f'{np.round(class_acc*100,3)}%')
-                                # RGMM
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 7].imshow(posterior['GMM'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 7].title.set_text(
-                                    f'RGMM {date_string[5:]}')
-                                class_map, class_acc = quantitative_results_figure.get_quantitative_results(label_image=label_image, class_labels=posterior['GMM'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 8].imshow(class_map)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 8].title.set_text(
-                                    f'{np.round(class_acc*100,3)}%')
-                                quantitative_results_output[label_idx]['RGMM'] = class_acc
-                                # LR
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 9].imshow(predicted_class['Logistic Regression'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 9].title.set_text(
-                                    f'LR {date_string[5:]}')
-                                class_map, class_acc = quantitative_results_figure.get_quantitative_results(label_image=label_image, class_labels=predicted_class['Logistic Regression'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 10].imshow(class_map)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 10].title.set_text(
-                                    f'{np.round(class_acc*100,3)}%')
-                                # RLR
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 11].imshow(posterior['Logistic Regression'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 11].title.set_text(
-                                    f'RLR {date_string[5:]}')
-                                class_map, class_acc = quantitative_results_figure.get_quantitative_results(label_image=label_image, class_labels=posterior['Logistic Regression'])
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 12].imshow(class_map)
-                                quantitative_results_figure.axarr[quantitative_results_plotted, 12].title.set_text(
-                                    f'{np.round(class_acc*100,3)}%')
-                                quantitative_results_output[label_idx]['RLR'] = class_acc
-                                plt.tight_layout()
-                        quantitative_results_plotted = quantitative_results_plotted + 1
-                    # **************************************************************
-                    # ********************** QUANTITATIVE ANALYSIS ENDS
-                    # **************************************************************
-                time_index = time_index + 1
-        # Save figure as pdf
-       #return quantitative_results_output
-        if Debug.save_figures:
-            results_figure.f.savefig(os.path.join(Config.path_results_figures,
-                                                  f'july_192_supp.pdf'),
-                                     format="pdf", bbox_inches="tight", dpi=1000)
-            quantitative_results_figure.f.savefig(os.path.join(Config.path_results_figures,
-                                                  f'quant_results_{Config.eps}.pdf'),
-                                     format="pdf", bbox_inches="tight", dpi=1000)
-    elif Config.scenario != 'multiearth':
-        # The classifier is applied to all the bands of all the images to be read
-        # Each image is linked to one specific date
-        for image_idx in range(Config.offset_eval_images, num_evaluation_images):
-            # All bands of the image with index *image_idx* are stored in *image_all_bands*
-            image_all_bands, date_string = image_reader.read_image(path=path_evaluation_images, image_idx=image_idx)
+            # [APPENDIX] Plot one date results in Appendix figure
+            if Visual.appendix_fig_settings['plot']:
+                result_idx = Config.index_images_to_evaluate[Config.test_site].index(image_idx)
+                appendix_figure.plot_results(image_idx=image_idx, image_all_bands=image_all_bands,
+                                            base_model_predicted_class=predicted_class,date_string=date_string,
+                                            posterior=posterior, result_idx=result_idx)
+                print('Appendix Results have been plotted for the current date')
 
-            if not Debug.check_dates:
-                # Calculate and add the spectral index for all bands
-                index = get_broadband_index(data=image_all_bands, bands=Config.bands_spectral_index[Config.scenario])
-                image_all_bands = np.hstack([image_all_bands, index.reshape(-1, 1)])
+            # [QUANTITATIVE ANALYSIS] Plot one date results in Classification figure
+            print(f"plotting results for image with index {image_idx}")
+            if Visual.class_fig_settings['plot'] and image_idx in Config.index_images_to_plot[Config.test_site]:
+                result_idx = Config.index_images_to_plot[Config.test_site].index(image_idx)
+                results_figure.plot_results(image_idx=image_idx, image_all_bands=image_all_bands,
+                                            base_model_predicted_class=predicted_class,
+                                            posterior=posterior, result_idx=result_idx)
+                print('Quantitative Analysis Results have been plotted for current date')
+            time_index = time_index + 1
+        date_string_list.append(date_string)
+    path_results = os.path.join(Config.path_evaluation_results, "classification")
 
-                # Get labels from the spectral index values
-                labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]))
+    #
+    # Sensitivity Analysis
+    if Debug.store_pickle_sensitivity_analysis:
+        #
+        # ----- Save Quantitative Analysis (QA) Results - Pickle with accuracies
+        path_save_pickle = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
+                                     f"{Config.scenario}","results",f"eps_{Config.eps[Config.test_site]}")
+        pickle.dump(results_figure.results_qa, open(path_save_pickle, 'wb'))
+        #
+        # ----- Save Classification figure
+        results_figure.adjust_figure()
+        # Save figure
+        path_save_fig = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
+                                     f"{Config.scenario}","results", f"fig_classification_eps_{Config.eps[Config.test_site]}.svg")
+        results_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
+        #
+        # ----- Save Appendix figure
+        settings = Visual.appendix_fig_settings[Config.test_site]
+        appendix_figure.f.subplots_adjust(wspace=settings['wspace'], hspace=settings['hspace'], top=settings['top'],
+                                          right=settings['right'], left=settings['left'], bottom=settings['bottom'])
+        # Save figure
+        path_save_fig = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
+                                     f"{Config.scenario}","results",f"fig_appendix_eps_{Config.eps[Config.test_site]}.svg")
+        appendix_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
 
-                # Evaluate the 3 models for one date
-                if Config.evaluation_generate_results:
-                    # If results need to be generated again, we need to evaluate considering all the dates, regardless of
-                    # how many dates we want to plot
-                    likelihood, posterior = evaluate_models(image_all_bands=image_all_bands, rbc_objects=rbc_objects,
-                                                            time_index=time_index, image_index=image_idx,
-                                                            date_string=date_string)
-                else:
-                    print('No evaluation results are generated')
+    if Visual.appendix_fig_settings['save']:
+        settings = Visual.appendix_fig_settings[Config.test_site]
+       # Adjust layout
+        appendix_figure.f.subplots_adjust(wspace=settings['wspace'], hspace=settings['hspace'], top=settings['top'],
+                                          right=settings['right'], left=settings['left'], bottom=settings['bottom'])
+        # Save figure
+        path_save_fig = os.path.join(Config.path_evaluation_results, "classification",f"{Config.scenario}_{Config.test_site}",
+                                     f"figures", f"fig_config_{Config.conf_id}_appendix.svg")
+        appendix_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
 
-                # Plot results for this image
-                print(f"plotting results for image with index {image_idx}")
-                if image_idx in Config.index_images_to_evaluate[Config.scene_id]:
-                    # User wants to plot this image
-                    if image_idx == Config.index_images_to_evaluate[Config.scene_id][0]:
-                        # This is the first image to be plotted
-                        # Figure is created
-                        results_figure = ClassificationResultsFigure()
-                        results_figure.create_figure()
-                    result_idx = Config.index_images_to_evaluate[Config.scene_id].index(image_idx)
-                    results_figure.plot_results_one_date(image_idx=image_idx, image_all_bands=image_all_bands,
-                                                         date_string=date_string, likelihood=likelihood,
-                                                         posterior=posterior, result_idx=result_idx)
-                time_index = time_index + 1
-        # Save figure as pdf
-        if Debug.save_figures:
-            results_figure.f.savefig(os.path.join(Config.path_results_figures,
-                                                  f'classification_{Config.scenario}_{Config.scene_id}_epsilon_{Config.eps}_norm_constant_{Config.norm_constant}.pdf'),
-                                     format="pdf", bbox_inches="tight", dpi=200)
-    else:
-        print('Error: incorrect scenario has been selected in the configuration file')
+    if Visual.class_fig_settings['save']:
+        # 1b every 4
+        # Visual.class_fig_settings[Config.test_site]['dist_aux'] = 0.13
+        # Visual.class_fig_settings[Config.test_site]['height_image'] = 0.025
+        # Visual.class_fig_settings[Config.test_site]['dist_separation'] = 0.005
+        # Visual.class_fig_settings[Config.test_site]['tuned_wspace'] = -0.09
+        # Visual.class_fig_settings[Config.test_site]['tuned_hspace'] = -0.2
+        # Adjust layout
+        results_figure.adjust_figure()
+        # Save figure
+        path_save_fig = os.path.join(Config.path_evaluation_results, "classification",f"{Config.scenario}_{Config.test_site}",
+                                     f"figures", f"fig_config_{Config.conf_id}.svg")
+        results_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
+
+    # If QA results are saved we can (1) compute boxplot and (2) update table afterwards
+    if Config.qa_settings['save_results']:
+        path_results_metrics = os.path.join(path_results, f'{Config.scenario}_{Config.test_site}', f'accuracy',
+                                            f'conf_{Config.conf_id}')
+        pickle.dump(results_figure.plot_legend[:-1], open(os.path.join(path_results_metrics, "models.pkl"), "wb"))
+        for acc in Config.qa_settings['metrics']:
+            path_i = os.path.join(path_results_metrics, f'{acc}.pkl')
+            pickle.dump(results_figure.results_qa[acc], open(path_i, "wb"))
     print('Evaluation Main is FINISHED')
 
 
@@ -433,3 +393,29 @@ def check_index_threshold(image: np.ndarray, rbc_objects: Dict[str, RBC], date):
     else:
         accepted_image = True
     return accepted_image
+
+def load_results(image_idx: int):
+    if Config.test_site == '2':
+        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                        f'{Config.scenario}_{Config.test_site}',
+                                        f'{Config.scenario}_3_image_{image_idx}_epsilon_'+r"{1: 0.05, 2: 0.05, 3: 0.05, 4: 0.01}.pkl")
+        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                        f'{Config.scenario}_{Config.test_site}',
+                                        f'{Config.scenario}_{Config.test_site}_image_{image_idx}_confID_{Config.conf_id}.pkl')
+
+    elif Config.test_site == '1a':
+        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                        f'{Config.scenario}_{Config.test_site}',
+                                        f'{Config.scenario}_1_image_{image_idx}_EPS_?.pkl')
+    elif Config.test_site == '3':
+        a = {1: 0.05, 2: 0.05, 3: 0.05, 4: 0.01}
+        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                        f'{Config.scenario}_4_image_{image_idx}_epsilon_{a}.pkl')
+        pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                        f'{Config.scenario}_{Config.test_site}',
+                                        f'{Config.scenario}_{Config.test_site}_image_{image_idx}_confID_{Config.conf_id}.pkl')
+    pickle_file_path = os.path.join(Config.path_evaluation_results, 'classification',
+                                    f'{Config.scenario}_{Config.test_site}', 'posteriors',
+                                    f'{Config.scenario}_{Config.test_site}_image_{image_idx}_confID_{Config.conf_id}.pkl')
+    [predicted_class, posterior] = pickle.load(open(pickle_file_path, 'rb'))
+    return [predicted_class, posterior]

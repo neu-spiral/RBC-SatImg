@@ -84,7 +84,7 @@ def get_ndvi_cloud_detector_labels(pixels: np.ndarray):
     """
     index = get_broadband_index(data=pixels, bands=Config.cloud_filtering['ndvi_bands'])
     labels = get_labels_from_index(index=index, num_classes=len(Config.classes[Config.scenario]),
-                                   threshold=Config.cloud_filtering['t_ndvi'])
+                                   threshold=[Config.cloud_filtering['t_ndvi']])
     return labels
 
 

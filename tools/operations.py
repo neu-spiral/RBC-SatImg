@@ -65,8 +65,8 @@ def get_index_pixels_of_interest(image_all_bands: np.ndarray, scene_id: int = 0)
     else:
         # If the scene_id is other than 0, the coordinates of the pixels to evaluate are defined
         # in the configuration file.
-        x_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['x_coords']
-        y_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['y_coords']
+        x_coords = Config.pixel_coords_to_evaluate[Config.test_site]['x_coords']
+        y_coords = Config.pixel_coords_to_evaluate[Config.test_site]['y_coords']
         index_pixels_of_interest = index_all_pixels[x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]].flatten().astype(
             'int')
     return index_pixels_of_interest
@@ -79,8 +79,8 @@ def get_index_pixels_of_interest(image_all_bands: np.ndarray, scene_id: int = 0)
         # in the configuration file
         index_all_pixels = np.array(range(image_all_bands.shape[0])).reshape(Config.image_dimensions[Config.scenario]['dim_x'],
                                                  Config.image_dimensions[Config.scenario]['dim_y'])
-        x_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['x_coords']
-        y_coords = Config.pixel_coords_to_evaluate[Config.scene_id]['y_coords']
+        x_coords = Config.pixel_coords_to_evaluate[Config.test_site]['x_coords']
+        y_coords = Config.pixel_coords_to_evaluate[Config.test_site]['y_coords']
         index_pixels_of_interest = index_all_pixels[x_coords[0]:x_coords[1], y_coords[0]:y_coords[1]].flatten().astype(
             'int')
     return index_pixels_of_interest
