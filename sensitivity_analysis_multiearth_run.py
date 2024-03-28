@@ -27,6 +27,7 @@ epsilon_evaluation_vector = [0, 0.001, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.
                              0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8]
 pickle_file_path = os.path.join(Config.path_evaluation_results, 'sensitivity_analysis_multiearth.pkl')
 
+
 # CALLING MAIN FOR ALL VALUES OF EPSILON
 for eps_i in epsilon_evaluation_vector:
 
@@ -48,10 +49,6 @@ for eps_i in epsilon_evaluation_vector:
     Config.eps_DWM[Config.test_site] = eps_i
     Config.eps_GMM[Config.test_site] = eps_i
     Config.eps_LR[Config.test_site] = eps_i
-    Config.eps_adaptive[Config.test_site] = eps_i
-    Config.eps_DWM_adaptive[Config.test_site] = eps_i
-    Config.eps_GMM_adaptive[Config.test_site] = eps_i
-    Config.eps_LR_adaptive[Config.test_site] = eps_i
 
     Config.fig_id = f"sensitivity_analysis_testsite_{Config.test_site}_eps_{eps_i}"
 

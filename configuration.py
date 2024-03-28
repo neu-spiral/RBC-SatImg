@@ -254,7 +254,7 @@ class Config:
     # --------------------------------------------------------------------
     #
     # TODO: Select test site to evaluate
-    test_site = '3'  # '1a' | '1b' | '2' | '3'
+    test_site = '1a'  # '1a' | '1b' | '2' | '3'
     #   - test_site = '1a' for Oroville Dam (water stream)
     #   - test_site = '1b' for Oroville Dam (peninsula)
     #   - test_site = '2' for Charles River

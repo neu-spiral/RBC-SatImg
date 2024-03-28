@@ -89,96 +89,47 @@ class RBC:
             dictionary containing the posterior probabilities for each model
         
         """
+        # Get the index of the pixels that define the scene selected in the configuration file
+        index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
+                                                                scene_id=Config.test_site)
+
         if Config.evaluation_generate_results_likelihood:
-            # Get the index of the pixels that define the scene selected in the configuration file
-            index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
-                                                                    scene_id=Config.test_site)
-
-
             # Calculate the prior probability (time_index = 0)
             # or the likelihood or base model posterior (time_index > 0)
             # The way to calculate this depends on the model under evaluation
             # A likelihood value is calculated for each pixel and class
-            base_model_predicted_probabilities = self.calculate_prediction(image_all_bands=image_all_bands)  # return this value for histogram
+            base_model_predicted_probabilities = self.calculate_prediction(
+                image_all_bands=image_all_bands)  # return this value for histogram
             # analysis
-
-            #  At time instant 0, the prior probability is equal to:
-            #   - the model prediction, in the case of having a pretrained model
-            #   - the softmax probability, otherwise (this is what is returned when calculating the prediction)
-            # *likelihood* corresponds to the likelihood or the base model posterior
-            if time_index == 0:
-                self.prior_probability = base_model_predicted_probabilities.copy()
-
-            """
-            # TODO: This line was added to avoid a dimensional error, but it should be checked whether it could be removed
-            if np.ndim(likelihood) == 3:
-                likelihood = likelihood.reshape(self.total_num_pixels, self.num_classes)
-            """
-
-            # Image with the posterior probabilities for each pixel is calculated
-            # Only the pixels from the chosen scene are considered
-            # The calculate_posterior function is applied to all the rows
-            # Each row corresponds to all the bands values for a specific pixel
-            """
-            del_l = np.apply_along_axis(self.calculate_posterior, 1, image_all_bands[index_pixels_of_interest,], likelihood, self.model)
-            del_l = del_l.reshape((del_l.shape[0], self.num_classes))
-            self.posterior_probability[index_pixels_of_interest] = del_l  # we just save the sub-scene pixels
-    
-            """
-            # Initialize posterior probability
-            posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
-            # A posterior value is calculated for each pixel and class
-            # Only pixels belonging to the sub-scene are considered
-            # for pixel_i in index_pixels_of_interest:
-            #     posterior_probability[pixel_i, :] = self.calculate_posterior(bands=image_all_bands[pixel_i, :], base_model_predicted_probabilities=base_model_predicted_probabilities, pixel_position=pixel_i)
-            if time_index == 0:
-                marginal_probs = np.array(Config.class_marginal_probabilities[Config.scenario])
-                marginal_probs = np.repeat(marginal_probs.reshape(1, 2), base_model_predicted_probabilities.shape[0], axis=0)
-                self.prior_probability = marginal_probs
-
-            # Calculate the class predictions
-            # Values in the predictions correspond to the index of the class that is more probable
-            recursive_class_prediction = posterior_probability.argmax(axis=1)
-            base_model_class_prediction = base_model_predicted_probabilities.argmax(axis=1)
-
-            #plt.figure(),plt.imshow(recursive_class_prediction.reshape(2229,3341)[1400:1550,1540:1650].reshape(150,110))
-            #plt.figure(), plt.imshow(base_model_class_prediction.reshape(2229,3341)[1400:1550,1540:1650].reshape(150,110))
-            #plt.figure(), plt.imshow(base_model_class_prediction.reshape(2229, 3341)[1400:1550, 1540:1650].reshape(150, 110)-recursive_class_prediction.reshape(2229,3341)[1400:1550,1540:1650].reshape(150,110))
-            pickle_file_path_likelihood = os.path.join(Config.path_evaluation_results, "classification",
-                                            f"{Config.scenario}_{Config.test_site}", "likelihoods",
-                                            f"image_{image_idx}_model_{self.model}_likelihood")
-            pickle.dump(base_model_predicted_probabilities, open(pickle_file_path_likelihood, 'wb'))
         else:
-            # Get the index of the pixels that define the scene selected in the configuration file
-            index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
-                                                                    scene_id=Config.test_site)
-
             pickle_file_path_likelihood = os.path.join(Config.path_evaluation_results, "classification",
                                             f"{Config.scenario}_{Config.test_site}", "likelihoods",
                                             f"image_{image_idx}_model_{self.model}_likelihood")
             base_model_predicted_probabilities = pickle.load(open(pickle_file_path_likelihood, 'rb'))
 
-            #  At time instant 0, the prior probability is equal to:
-            #   - the model prediction, in the case of having a pretrained model
-            #   - the softmax probability, otherwise (this is what is returned when calculating the prediction)
-            # *likelihood* corresponds to the likelihood or the base model posterior
-            if time_index == 0:
-                marginal_probs = np.array(Config.class_marginal_probabilities[Config.scenario])
-                marginal_probs = np.repeat(marginal_probs.reshape(1, 2), base_model_predicted_probabilities.shape[0], axis=0)
-                self.prior_probability = marginal_probs
+        #  At time instant 0, the prior probability is equal to:
+        #   - the model prediction, in the case of having a pretrained model
+        #   - the softmax probability, otherwise (this is what is returned when calculating the prediction)
+        # *likelihood* corresponds to the likelihood or the base model posterior
+        if time_index == 0:
+            marginal_probs = np.array(Config.class_marginal_probabilities[Config.scenario])
+            marginal_probs = np.repeat(marginal_probs.reshape(1, 2), base_model_predicted_probabilities.shape[0], axis=0)
+            self.prior_probability = marginal_probs
 
 
-            # Initialize posterior probability
-            posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
-            # A posterior value is calculated for each pixel and class
-            # Only pixels belonging to the sub-scene are considered
-            for pixel_i in index_pixels_of_interest:
-                posterior_probability[pixel_i, :] = self.calculate_posterior(bands=image_all_bands[pixel_i, :], base_model_predicted_probabilities=base_model_predicted_probabilities, pixel_position=pixel_i)
+        # Initialize posterior probability
+        posterior_probability = np.zeros(shape=[self.total_num_pixels, self.num_classes])
+        # A posterior value is calculated for each pixel and class
+        # Only pixels belonging to the sub-scene are considered
+        for pixel_i in index_pixels_of_interest:
+            posterior_probability[pixel_i, :] = self.calculate_posterior(bands=image_all_bands[pixel_i, :], base_model_predicted_probabilities=base_model_predicted_probabilities, pixel_position=pixel_i)
 
-            # Calculate the class predictions
-            # Values in the predictions correspond to the index of the class that is more probable
-            recursive_class_prediction = posterior_probability.argmax(axis=1)
-            base_model_class_prediction = base_model_predicted_probabilities.argmax(axis=1)
+        # Calculate the class predictions
+        # Values in the predictions correspond to the index of the class that is more probable
+        recursive_class_prediction = posterior_probability.argmax(axis=1)
+        base_model_class_prediction = base_model_predicted_probabilities.argmax(axis=1)
+
+        # Return
         # base_model_class_prediction = classification result from instantaneous classifier
         # recursive_class_prediction = classification result from RBC
         # base_model_predicted_probabilities = probability values from instantaneous classifier

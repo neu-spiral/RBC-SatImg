@@ -11,7 +11,6 @@ from bayesian_recursive import RBC, get_rbc_objects
 from plot_figures.plot_results_classification import ClassificationResultsFigure
 from plot_figures.classification_figure import ClassificationFigure
 from plot_figures.appendix_figure import AppendixFigure
-from plot_figures.quantitative_analysis.update_table import update_table, get_date_statistic
 from typing import List
 from sklearn.mixture import GaussianMixture
 from sklearn.linear_model import LogisticRegression

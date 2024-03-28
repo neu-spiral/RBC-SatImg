@@ -9,7 +9,6 @@ from image_reader import ReadSentinel2
 from configuration import Config, Debug, Visual
 from matplotlib import colors
 from figures import get_rgb_image, get_green_image
-from plot_figures.quantitative_analysis.update_table import update_table
 
 class ClassificationResultsFigure:
     def __init__(self):
