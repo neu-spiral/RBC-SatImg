@@ -93,6 +93,9 @@ class RBC:
         index_pixels_of_interest = get_index_pixels_of_interest(image_all_bands=image_all_bands,
                                                                 scene_id=Config.test_site)
 
+        pickle_file_path_likelihood = os.path.join(Config.path_evaluation_results, "classification",
+                                                   f"{Config.scenario}_{Config.test_site}", "likelihoods",
+                                                   f"image_{image_idx}_model_{self.model}_likelihood")
         if Config.evaluation_generate_results_likelihood:
             # Calculate the prior probability (time_index = 0)
             # or the likelihood or base model posterior (time_index > 0)
@@ -101,10 +104,8 @@ class RBC:
             base_model_predicted_probabilities = self.calculate_prediction(
                 image_all_bands=image_all_bands)  # return this value for histogram
             # analysis
+            pickle.dump(base_model_predicted_probabilities, open(pickle_file_path_likelihood, 'wb'))
         else:
-            pickle_file_path_likelihood = os.path.join(Config.path_evaluation_results, "classification",
-                                            f"{Config.scenario}_{Config.test_site}", "likelihoods",
-                                            f"image_{image_idx}_model_{self.model}_likelihood")
             base_model_predicted_probabilities = pickle.load(open(pickle_file_path_likelihood, 'rb'))
 
         #  At time instant 0, the prior probability is equal to:

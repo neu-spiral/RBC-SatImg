@@ -354,7 +354,7 @@ class Config:
     # If evaluation is skipped, previously stored evaluation results are plotted
     evaluation_store_results = False # True if wanting to store evaluation results for
     # further visualization
-    evaluation_generate_results_likelihood = False  # True if wanting to generate instantaneous classifier results and
+    evaluation_generate_results_likelihood = True  # True if wanting to generate instantaneous classifier results and
     # store them, False if wanting to use pre-generated and pre-stored likelihood results
 
     #
