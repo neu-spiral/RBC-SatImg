@@ -147,7 +147,7 @@ The dataset *RBC-SatImg: Sentinel-2 Imagery and WatData Labels for Water Mapping
 3. **Dataset Usage**:
    - Sentinel-2 imagery is used for training and evaluation.
    - Pre-computed results in `./evaluation_results/` allow reproducing figures and findings in the paper without re-running computationally expensive simulations.
-<p align="right"><a href="#Recursive">⬆ Back to Top</a></p>
+<p align="right"><a href="#recursive">⬆ Back to Top</a></p>
 
 
 ## 🌍  Study Areas
