@@ -28,7 +28,7 @@
 
 🚨 🚨 🚨 
 <span style="color: red; font-size: 20px;">
-<code>main-precomputed-results</code>: The current branch is designed for users who want to replicate the results presented in the paper by running the experiments from scratch or directly generating the figures from the paper with precomputed results.
+<code>master-precomputed-results</code>: The current branch is designed for users who want to replicate the results presented in the paper by running the experiments from scratch or directly generating the figures from the paper with precomputed results.
 </span>
 
 ---
@@ -61,7 +61,7 @@ For users looking for a simpler version of the code, we recommend checking out t
 
 
 
-### Current Branch: `main-precomputed-results`
+### Current Branch: `master-precomputed-results`
 
 This branch is designed for users who want to replicate the results presented in the paper using our dataset, available in Zenodo Versions 3 and 4. Here’s how it works:
 
