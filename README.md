@@ -44,7 +44,7 @@ This repository contains the official implementation and resources for the paper
 
 </div>
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 
 ## 🚦 Additional Resources and Simpler Code (`main` branch)
@@ -73,7 +73,7 @@ This branch supports both approaches:
 1. **Run experiments from scratch** using our data from either Version 3 or 4.
 2. **Directly regenerate paper figures** by leveraging the precomputed results included in Zenodo Version 3.
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 ## 🚀 Getting Started
 
@@ -93,7 +93,7 @@ Edit the `configuration.py` file to customize the parameters for your specific u
 ### 3. Run the Main Script
 Execute the main script to perform training and evaluation.
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 ## 🛠️ Installation
 
@@ -150,7 +150,6 @@ The dataset *RBC-SatImg: Sentinel-2 Imagery and WatData Labels for Water Mapping
    - Pre-computed results in `./evaluation_results/` allow reproducing figures and findings in the paper without re-running computationally expensive simulations.
 <p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
-
 ## 🌍  Study Areas
 
 ---
@@ -189,14 +188,14 @@ While the **deforestation labels** for the Amazon rainforest were sourced from t
 <div align="center">
 <img src="plot_figures/readme_figures/watdata.png" alt="SITE 3" width="600"/>
 </div>
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 ## 🙏 Acknowledgements
 
 ---
 This work has been partially supported by the National Geographic Society under grant NGS-86713T-21, the National Science Foundation under Awards ECCS-1845833 and CCF-2326559, and the National Aeronautics and Space Administration under Award 80NSSC20K0742.
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 
 ## 🤝 Contributions
@@ -211,7 +210,7 @@ We welcome your contributions! Here are some ways to get involved:
 
 If you do so, don't hesitate to contact us to share your results or discuss your contributions!
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 
 ## 📝 Citing this Paper
@@ -232,7 +231,7 @@ If you use this code or dataset in your research, please cite [our paper](https:
 }
 ```
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 
 
@@ -256,7 +255,7 @@ and [Surface Water Mapping by Deep Learning](https://ieeexplore.ieee.org/documen
 Xin Luo, Xiaohua Tong and Zhongwen Hu. This algorithm for water mapping is proposed in the publication
 [An applicable and automatic method for earth surface water mapping based on multispectral images](https://www.sciencedirect.com/science/article/pii/S0303243421001793).
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 ## 👩‍💻 Contact
 
@@ -282,4 +281,4 @@ Vandoeuvre-les-Nancy, F-54000, France
 <sup>4</sup> **University of Massachusetts Boston (Department of Computer Science)**  
 Boston, MA, USA  
 
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
