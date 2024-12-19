@@ -81,7 +81,7 @@ This branch supports both approaches:
 
 ---
 ### 1. Install Required Dependencies
-Begin by completing the steps outlined in the [Installation](#installation) section to set up the required environment and dependencies.
+Begin by completing the steps outlined in the Installation section to set up the required environment and dependencies.
 
 ### 2. Configure Parameters
 Edit the `configuration.py` file to customize the parameters for your specific use case. Here’s what you need to adjust:
