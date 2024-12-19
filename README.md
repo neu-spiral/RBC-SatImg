@@ -112,9 +112,9 @@ GDAL is a required dependency for this project. Follow one of these methods to i
 
 * If you encounter issues with unrecognized modules, consider installing problematic packages separately as suggested in the _Installation via pip and conda_ section from [this guide](https://scikit-image.org/docs/stable/install.html). For example:
 
-  <code>python -m pip install -U pip python -m 
+  <code>python -m pip install -U pip python -m  </code>
   
-  pip install -U scikit-image</code>
+  <code> pip install -U scikit-image</code>
 
 * **Install TensorFlow for macOS (M1/M2 chips):** Follow [this detailed guide](https://caffeinedev.medium.com/how-to-install-tensorflow-on-m1-mac-8e9b91d93706). Using Miniconda is highly recommended for compatibility.
 
@@ -147,7 +147,7 @@ The dataset *RBC-SatImg: Sentinel-2 Imagery and WatData Labels for Water Mapping
 3. **Dataset Usage**:
    - Sentinel-2 imagery is used for training and evaluation.
    - Pre-computed results in `./evaluation_results/` allow reproducing figures and findings in the paper without re-running computationally expensive simulations.
-<p align="right"><a href="#recursive-bayesian-classifier-for-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#recursive-bayesian-classifier-for-satellite-remote-sensing-time-series">⬆ Back to Top</a></p>
 
 
 ## 🌍  Study Areas
