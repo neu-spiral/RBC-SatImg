@@ -6,7 +6,7 @@
 
 
 
-# Recursive Bayesian Classifier (RBC) for Satellite Remote Sensing Time Series 🌍 🛰️️
+# Recursive 🌍 🛰️️
 [comment]: https://gist.github.com/kimjisub/360ea6fc43b82baaf7193175fd12d2f7
 
 ![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)
@@ -147,7 +147,7 @@ The dataset *RBC-SatImg: Sentinel-2 Imagery and WatData Labels for Water Mapping
 3. **Dataset Usage**:
    - Sentinel-2 imagery is used for training and evaluation.
    - Pre-computed results in `./evaluation_results/` allow reproducing figures and findings in the paper without re-running computationally expensive simulations.
-<p align="right"><a href="#Recursive-Bayesian-Classifier-(RBC)-for-Satellite-Remote-Sensing-Time-Series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive">⬆ Back to Top</a></p>
 
 
 ## 🌍  Study Areas
