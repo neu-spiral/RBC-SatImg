@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from configuration import Config, Debug
 from image_reader import ReadSentinel2
 from training import training_main
-from evaluation import evaluation_main
+from deprecated.evaluation_deprecated import evaluation_main
 from datetime import datetime
 import matplotlib.font_manager as font_manager
 

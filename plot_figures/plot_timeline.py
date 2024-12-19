@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 import pickle
 from matplotlib.patches import Rectangle
 from datetime import timedelta
+import matplotlib
+
+# Explicitly set the backend to avoid issues
+matplotlib.use('TkAgg')  # Or 'Agg' for non-GUI environments, depending on your needs
+
 
 
 def legend_without_duplicate_labels(ax):
@@ -14,9 +19,9 @@ def legend_without_duplicate_labels(ax):
 # --------------------------------------------------------------------
 # TO BE CHANGED BY USER
 # --------------------------------------------------------------------
+# Scenario and optional pickle file paths
 # TODO: Change scenario accordingly:
-scenario_to_plot = 'multiearth'
-scenario_to_plot = 'charles_river'
+scenario_to_plot = 'multiearth' # 'multiearth' | 'charles_river' | 'oroville_dam'
 
 # --------------------------------------------------------------------
 # Configuration

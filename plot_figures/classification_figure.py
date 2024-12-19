@@ -1,13 +1,13 @@
+import logging
 import os
 import imageio
 
 import matplotlib.pyplot as plt
 from sklearn.metrics import balanced_accuracy_score, f1_score
-from PIL import Image
 import numpy as np
 
 from image_reader import ReadSentinel2
-from configuration import Config, Debug, Visual
+from configuration import Config, Visual
 from matplotlib import colors
 from figures import get_rgb_image
 
@@ -48,166 +48,222 @@ class ClassificationFigure:
         # Create figure
         self.f, self.axarr = plt.subplots(self.n_results_to_plot, len(self.models) + 1, figsize=(9, 10))
 
-    def plot_results(self, image_idx: int, image_all_bands: np.ndarray,
-                              base_model_predicted_class: np.ndarray, posterior: np.ndarray, result_idx: int):
-        """ Plots all the results that have been stored with the corresponding configuration.
-
+    def calculate_accuracy_metrics(self, label_image: np.ndarray, predicted_image: np.ndarray) -> dict:
         """
+        Calculate classification accuracy metrics.
 
-        #
-        result_idx = result_idx * 2
-        last_col = self.n_total_models
+        Parameters
+        ----------
+        label_image : np.ndarray
+            Ground truth labels.
+        predicted_image : np.ndarray
+            Predicted classification results.
 
-        #
-        # Plot RGB Image
-        rgb_image = get_rgb_image(image_all_bands=image_all_bands)
-        rgb_image = rgb_image * Visual.scaling_rgb[Config.test_site]
-        self.axarr[result_idx, last_col].imshow(
-            rgb_image[self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]])
-        self.axarr[result_idx, last_col].axis('off')
+        Returns
+        -------
+        dict
+            Dictionary containing accuracy, balanced_accuracy, and f1_score.
+        """
+        balanced_accuracy = balanced_accuracy_score(label_image.flatten(), predicted_image.flatten())
+        f1 = f1_score(label_image.flatten(), predicted_image.flatten(), average="weighted")
+        accuracy = np.mean(label_image == predicted_image) * 100
 
-        #
-        # Plot Label
-        if Config.test_site == '2':
-            path_label = os.path.join(Config.path_sentinel_images, Config.scenario, f"labels_{Config.test_site}", "charles_river_water_label.tiff")
-            label_image = imageio.imread(path_label)
-        elif Config.test_site in ['1a', '1b']:
-            path_label = os.path.join(Config.path_sentinel_images, Config.scenario, f"labels_{Config.test_site}", f"label_{image_idx}.tiff")
-            label_image = imageio.imread(path_label)
+        return {
+            "accuracy": accuracy,
+            "balanced_accuracy": balanced_accuracy * 100,
+            "f1_score": f1 * 100
+        }
+
+    def add_metrics_to_plot(self, metrics: dict, result_idx: int, model_idx: int):
+        """
+        Add accuracy metrics to the plots.
+
+        Parameters
+        ----------
+        metrics : dict
+            Dictionary containing accuracy metrics.
+        result_idx : int
+            Index to place the results in the plot grid.
+        model_idx : int
+            Index of the model being processed.
+        """
+        fontweight = Visual.class_fig_settings['font_highest_value']['fontweight']
+        fontcolor = Visual.class_fig_settings['font_highest_value']['fontcolor']
+        fontsize = Visual.class_fig_settings['fontsize'][Config.test_site]
+
+        balanced_accuracy = metrics['balanced_accuracy']
+
+        self.axarr[result_idx + 1, model_idx].set_xlabel(
+            f"{balanced_accuracy:.2f}%", fontweight=fontweight, color=fontcolor, fontsize=fontsize
+        )
+
+    def load_label_image(self, image_idx: int) -> np.ndarray:
+        """
+        Load ground truth labels for the given image index.
+
+        Parameters
+        ----------
+        image_idx : int
+            Index of the image being processed.
+
+        Returns
+        -------
+        np.ndarray or None
+            Ground truth label image or None if the label is not found.
+        """
+        if Config.test_site in ['2', '1a', '1b']:
+            path_label = os.path.join(Config.path_zenodo, 'RBC-WatData', f"labels_{Config.scenario}_{Config.test_site}",
+                                      f"label_{image_idx}.tiff")
+            if not os.path.exists(path_label):
+                logging.warning(f"Label file not found: {path_label}")
+                return None
+            return imageio.imread(path_label)
         elif Config.test_site == '3':
-            path_labels = os.path.join(Config.path_sentinel_images, Config.scenario, f"labels")
+            path_labels = os.path.join(Config.path_sentinel_images, Config.scenario, "labels")
             label_idx = Config.qa_settings['index_quant_analysis'][Config.test_site][image_idx]
             for file_counter, file_name in enumerate(sorted(os.listdir(path_labels))):
                 if file_counter == label_idx:
-                    path_label_i = os.path.join(path_labels, file_name)
-                    label_image = self.image_reader.read_band(path_label_i)
-        self.axarr[result_idx + 1, last_col].imshow(label_image,
-                                                          cmap=colors.ListedColormap(Visual.cmap['label']))
-        for axis in ['top', 'bottom', 'left', 'right']:
-            self.axarr[result_idx + 1, last_col].spines[axis].set_linewidth(0)
-        self.axarr[result_idx + 1, last_col].xaxis.set_label_coords(0, 0.325)
-        self.axarr[result_idx + 1, last_col].get_yaxis().set_ticks([])
-        self.axarr[result_idx + 1, last_col].get_xaxis().set_ticks([])
+                    full_path = os.path.join(path_labels, file_name)
+                    if not os.path.exists(full_path):
+                        logging.warning(f"Label file not found: {full_path}")
+                        return None
+                    return self.image_reader.read_band(full_path)
+        return None
 
-        # TODO: cmap call can be replaced by self.cmap
-        #
-        # Plot Classification Map + Classification Error Map
-        # We plot:
-        #   (1) - likelihood in the case of instantaneous classifiers (first row, first half columns)
-        #   (2) - posterior in the case of RBCs (first row, second half columns)
-        #   (3) - classification error map for all classifiers (second row, all columns)
-        for idx, model_i in enumerate(self.models):
-            if model_i[0] == 'R':
-                # Plot posterior results for RBC classifiers
-                result = posterior[model_i[1:]][self.x_coords[0]:self.x_coords[1],
-                         self.y_coords[0]:self.y_coords[1]]
+    def plot_classification_results(self, image_idx: int, image_all_bands: np.ndarray,
+                                    base_model_predicted_class: dict, posterior: dict, result_idx: int):
+        """
+        Plot classification results including RGB images, label images, classification maps, and error maps.
+
+        Parameters
+        ----------
+        image_idx : int
+            Index of the image being processed.
+        image_all_bands : np.ndarray
+            Array containing all bands of the image.
+        base_model_predicted_class : dict
+            Dictionary containing base model predictions.
+        posterior : dict
+            Dictionary containing posterior probabilities for recursive models.
+        result_idx : int
+            Row index to place the results in the plot grid.
+        """
+        # Calculate the starting rows for classification/error maps
+        classification_row = result_idx * 2
+        error_map_row = classification_row + 1
+
+        # Plot RGB image in the last column of the classification row
+        rgb_image = get_rgb_image(image_all_bands=image_all_bands)
+        rgb_image *= Visual.scaling_rgb[Config.test_site]
+        ax_rgb = self.axarr[classification_row, -1]
+        ax_rgb.imshow(rgb_image[self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]])
+        ax_rgb.set_xticks([]), ax_rgb.set_yticks([])
+        for spine in ax_rgb.spines.values():
+            spine.set_visible(False)
+
+        # Plot label image (or black if not available) in the last column of the error map row
+        label_image = self.load_label_image(image_idx)
+        ax_label = self.axarr[error_map_row, -1]
+        if label_image is None:
+            black_image = np.zeros((self.x_coords[1] - self.x_coords[0], self.y_coords[1] - self.y_coords[0]))
+            ax_label.imshow(black_image, cmap="gray")
+        else:
+            ax_label.imshow(label_image, cmap=colors.ListedColormap(Visual.cmap['label']))
+        ax_label.set_xticks([]), ax_label.set_yticks([])
+        for spine in ax_label.spines.values():
+            spine.set_visible(False)
+
+        # Plot classification maps and error maps for each model
+        for idx, model_name in enumerate(self.models):
+            if model_name.startswith("R"):
+                predicted_image = posterior[model_name[1:]]
             else:
-                # Plot likelihood results for instantaneous classifiers
-                result = base_model_predicted_class[model_i][self.x_coords[0]:self.x_coords[1],
-                         self.y_coords[0]:self.y_coords[1]]
+                predicted_image = base_model_predicted_class[model_name]
 
-            # Scale result to compare with label accordingly
-            if Config.test_site in [ '?']:
-                # result[np.where(result != 0)] = -1
-                # result = result + np.ones(result.shape)
-                result = result * -1
-            elif Config.test_site in ['1b']:
-                result[np.where(result != 0)] = -1
-                result = result + np.ones(result.shape)
-            # elif Config.test_site in ['2']:
-            #     result = result*-1
+            # Crop the predicted image for display
+            cropped_prediction = predicted_image[self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]]
 
-            # Plot result (classification map)
-            if Config.test_site == '1b':
-                self.axarr[result_idx, idx].imshow(result*-1, colors.ListedColormap(
-                    Visual.cmap[Config.scenario]))
+            # Classification map in classification_row
+            ax_class = self.axarr[classification_row, idx]
+            ax_class.imshow(cropped_prediction, cmap=self.cmap)
+            ax_class.set_xticks([]), ax_class.set_yticks([])
+            for spine in ax_class.spines.values():
+                spine.set_visible(False)
+
+            # Error map in error_map_row
+            ax_error = self.axarr[error_map_row, idx]
+            if label_image is None:
+                # If no label is available, plot a black error map
+                black_image = np.zeros(cropped_prediction.shape)
+                ax_error.imshow(black_image, cmap="gray")
             else:
-                self.axarr[result_idx, idx].imshow(result, colors.ListedColormap(
-                    Visual.cmap[Config.scenario]))
-            self.axarr[result_idx, idx].get_yaxis().set_ticks([]), self.axarr[
-                result_idx, idx].get_xaxis().set_ticks([]) # remove ticks
+                error_map = cropped_prediction != label_image[self.x_coords[0]:self.x_coords[1],
+                                                  self.y_coords[0]:self.y_coords[1]]
+                ax_error.imshow(error_map, cmap=colors.ListedColormap(Visual.cmap['error_map']))
+            ax_error.set_xticks([]), ax_error.set_yticks([])
+            for spine in ax_error.spines.values():
+                spine.set_visible(False)
 
-            # Plot error map
-            error_map = label_image != result
-            self.axarr[result_idx + 1, idx].imshow(error_map, colors.ListedColormap(Visual.cmap['error_map']))
-            self.axarr[result_idx + 1, idx].get_yaxis().set_ticks([]), self.axarr[
-                result_idx + 1, idx].get_xaxis().set_ticks([])
+            # Add metrics to the error map row with an offset
+            if label_image is not None:
+                metrics = self.calculate_accuracy_metrics(label_image, predicted_image)
+                self.results_qa['balanced_accuracy'][result_idx // 2, idx] = metrics['balanced_accuracy']
+                fontweight = Visual.class_fig_settings['font_highest_value']['fontweight']
+                fontcolor = Visual.class_fig_settings['font_highest_value']['fontcolor']
+                fontsize = Visual.class_fig_settings['fontsize'][Config.test_site]
 
-            from sklearn.metrics import confusion_matrix
-            conf_mat = confusion_matrix(y_true=label_image.flatten(), y_pred=result.flatten())
+                # Set the metrics as x-labels for the error map row
+                ax_error.set_xlabel(
+                    f"{metrics['balanced_accuracy']:.2f}%", fontweight=fontweight, color=fontcolor, fontsize=fontsize
+                )
 
-            # Quantitative Analysis (QA)
-            # Calculate and store QA metrics
-            balanced_accuracy = balanced_accuracy_score(y_true=label_image.flatten(), y_pred=result.flatten())
-            balanced_accuracy = np.floor(
-                (balanced_accuracy * 10000)) / 100
-            f1_score_i = f1_score(y_true=label_image.flatten(), y_pred=result.flatten())
-            accuracy = np.floor((1 - np.sum(error_map) / (error_map.shape[0] * error_map.shape[1])) * 10000) / 100
-            #self.results_qa['accuracy'][int(result_idx / 2), idx] = accuracy
-            self.results_qa['balanced_accuracy'][int(result_idx / 2), idx] = balanced_accuracy
-            #self.results_qa['f1'][int(result_idx / 2), idx] = np.floor((f1_score_i * 10000)) / 100
+    def process_and_plot_results(self, image_idx: int, image_all_bands: np.ndarray,
+                                 base_model_predicted_class: dict, posterior: dict, result_idx: int):
+        """
+        Process results, calculate accuracy metrics, and plot classification results.
 
-            # Remove axis
-            for axis in ['top', 'bottom', 'left', 'right']:
-                self.axarr[result_idx, idx].spines[axis].set_linewidth(0)
-                self.axarr[result_idx + 1, idx].spines[axis].set_linewidth(0)
+        This function handles the visualization of RGB images, classification maps, error maps,
+        and accuracy metrics for a given image. Accuracy metrics are calculated and added to
+        the error map plots as labels for easy reference.
 
-        #
-        # Plot selected metric result in x_label
-        main_metric = Config.qa_settings['main_metric']
-        for idx, model_i in enumerate(self.models[0:int(len(self.models) / 2)]):
-            nonrecursive_metric = self.results_qa[main_metric][int(result_idx / 2), idx]
-            recursive_metric = self.results_qa[main_metric][
-                int(result_idx / 2), idx + int(len(self.models) / 2)]
-            print(model_i, nonrecursive_metric, recursive_metric)
+        Parameters
+        ----------
+        image_idx : int
+            Index of the image being processed.
+        image_all_bands : np.ndarray
+            Array containing all bands of the image.
+        base_model_predicted_class : dict
+            Dictionary containing base model predictions.
+        posterior : dict
+            Dictionary containing posterior probabilities for recursive models.
+        result_idx : int
+            Index to place the results in the plot grid.
 
-            fontweight = Visual.class_fig_settings['font_highest_value']['fontweight']
-            fontcolor = Visual.class_fig_settings['font_highest_value']['fontcolor']
-            fontsize = Visual.class_fig_settings['fontsize'][Config.test_site]
-            if nonrecursive_metric > recursive_metric:
-                self.axarr[result_idx + 1, idx].set_xlabel(nonrecursive_metric, fontweight=fontweight,
-                                                           color=fontcolor, fontsize=fontsize)
-                self.axarr[result_idx + 1, idx + int(len(self.models) / 2)].set_xlabel(recursive_metric, fontsize=fontsize)
-            elif nonrecursive_metric < recursive_metric:
-                self.axarr[result_idx + 1, idx].set_xlabel(nonrecursive_metric, fontsize=fontsize)
-                self.axarr[result_idx + 1, idx + int(len(self.models) / 2)].set_xlabel(recursive_metric,
-                                                                                       fontweight=fontweight,
-                                                                                       color=fontcolor, fontsize=fontsize)
+        Returns
+        -------
+        None
+        """
+
+        # Load the ground truth label
+        label_image = self.load_label_image(image_idx)
+
+        # Plot classification results
+        self.plot_classification_results(image_idx, image_all_bands, base_model_predicted_class, posterior, result_idx)
+
+        # If label does not exist, skip metrics calculation
+        if label_image is None:
+            logging.warning(f"Skipping accuracy metrics calculation for image {image_idx} as label is missing.")
+            return
+
+        # Calculate accuracy metrics and store them
+        for idx, model_name in enumerate(self.models):
+            if model_name.startswith("R"):
+                predicted_image = posterior[model_name[1:]]
             else:
-                self.axarr[result_idx + 1, idx].set_xlabel(nonrecursive_metric, fontsize=fontsize)
-                self.axarr[result_idx + 1, idx + int(len(self.models) / 2)].set_xlabel(recursive_metric, fontsize=fontsize)
+                predicted_image = base_model_predicted_class[model_name]
 
-        # TODO: Clean this part of code by creating a label generation module
-        if Config.label_generation_settings['save_rgb']:
-            rgb_cut = rgb_image[self.x_coords[0]:self.x_coords[1], self.y_coords[0]:self.y_coords[1]]
-            plt.figure()
-            plt.imshow(rgb_cut)
-            plt.gca().set_axis_off()
-            plt.subplots_adjust(top=1, bottom=0, right=1, left=0,
-                                hspace=0, wspace=0)
-            plt.margins(0, 0)
-            path_rgb_prelabel = os.path.join(Config.path_sentinel_images, Config.scenario, "labels",
-                                      "charles_river_water_label.tiff")
-            plt.savefig(path_rgb_prelabel,
-                bbox_inches='tight', pad_inches=0)
-
-        # TODO: Clean this part of code by creating a label generation module
-        if Config.label_generation_settings['generate_label']:
-
-            # Create Label
-            path_labelstudio_label = ""
-            labelstudio_label = np.array(Image.open(path_labelstudio_label).resize([rgb_cut.shape[1], rgb_cut.shape[0]]))
-            label = np.zeros(shape=rgb_cut[:, :, 0].flatten().shape)
-            label[np.where(labelstudio_label.flatten() > 100)] = 1
-            label = label.reshape(rgb_cut.shape[0], rgb_cut.shape[1])
-
-            # Write Label
-            path_label = os.path.join(Config.path_sentinel_images, Config.scenario, "labels",
-                                      "charles_river_water_label.tiff")
-            imageio.imwrite(path_label, label)
-
-        plt.subplots_adjust(wspace=0, hspace=0)
-        self.f.show()
+            metrics = self.calculate_accuracy_metrics(label_image, predicted_image)
+            self.results_qa['balanced_accuracy'][result_idx // 2, idx] = metrics['balanced_accuracy']
 
     def adjust_figure(self):
         set = Visual.class_fig_settings[Config.test_site]

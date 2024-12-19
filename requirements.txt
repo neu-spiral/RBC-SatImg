@@ -1,8 +1,8 @@
-matplotlib>=3.3.4
-numpy>=1.19.2
-scikit_image>=0.17.2
-scikit_learn>=1.1.1
-tifffile>=2020.10.1
-tensorflow>=2.6.2
-
-
+deprecated==1.2.15
+imageio==2.36.1
+matplotlib==3.10.0
+numpy==1.24.2
+osgeo==0.0.1
+pandas==2.2.3
+scikit_learn==1.6.0
+skimage==0.0

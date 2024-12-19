@@ -1,25 +1,22 @@
+
 import logging
 import os
 import pickle
+from typing import List, Dict
 
 import numpy as np
-
-from image_reader import ReadSentinel2
-import matplotlib.pyplot as plt
-from configuration import Config, Debug, Visual
-from bayesian_recursive import RBC, get_rbc_objects
-from plot_figures.plot_results_classification import ClassificationResultsFigure
-from plot_figures.classification_figure import ClassificationFigure
-from plot_figures.appendix_figure import AppendixFigure
-from typing import List
 from sklearn.mixture import GaussianMixture
 from sklearn.linear_model import LogisticRegression
-from typing import Dict
 
-from tools.spectral_index import get_broadband_index, get_labels_from_index
+from image_reader import ReadSentinel2
+from configuration import Config, Debug, Visual
+from bayesian_recursive import RBC, get_rbc_objects
+from tools.spectral_index import get_broadband_index
 from tools.path_operations import get_num_images_in_folder
-from tools.cloud_filtering import check_cloud_threshold
-
+from plot_figures.classification_figure import ClassificationFigure
+from plot_figures.appendix_figure import AppendixFigure
+from plot_figures.box_plot import plot_qa_boxplot
+from plot_figures.plot_sensitivity_analysis_results import plot_results
 
 def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], time_index: int, image_index: int,
                     date_string: str):
@@ -64,50 +61,6 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
     dim_x = Config.image_dimensions[Config.scenario]['dim_x']
     dim_y = Config.image_dimensions[Config.scenario]['dim_y']
 
-    # Benchmark Deep Learning models for the water mapping experiment
-    if Config.scenario == "oroville_dam" or Config.scenario == "charles_river":
-
-        # WatNet Algorithm
-        # Update transition matrix
-        eps = Config.eps[Config.test_site]
-        if Config.scenario == "charles_river_3classes":
-            transition_matrix = np.array(
-                [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
-                3, 3)
-        elif Config.test_site in [1, 2, 3]:
-            eps_aux = Config.eps_DWM_adaptive[Config.test_site]
-            transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
-        else:
-            transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
-        rbc_objects["WatNet"].transition_matrix = transition_matrix
-        # Evaluate
-        base_model_predicted_class["WatNet"], posterior["WatNet"], prediction_float["WatNet"], posterior_probabilities[
-            "WatNet"] = rbc_objects["WatNet"].update_labels(
-            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
-        posterior["WatNet"] = posterior["WatNet"].reshape(dim_x, dim_y)
-        base_model_predicted_class["WatNet"] = base_model_predicted_class["WatNet"].reshape(dim_x, dim_y)
-
-        # DeepWaterMap Algorithm
-        # Update transition matrix
-        eps = Config.eps[Config.test_site]
-        if Config.scenario == "charles_river_3classes":
-            transition_matrix = np.array(
-                [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
-                3, 3)
-        elif Config.test_site in [1, 2, 3]:
-            eps_aux = Config.eps_DWM_adaptive[Config.test_site]
-            transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
-        else:
-            transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
-        rbc_objects["DeepWaterMap"].transition_matrix = transition_matrix
-        # Evaluate
-        base_model_predicted_class["DeepWaterMap"], posterior["DeepWaterMap"], prediction_float["DeepWaterMap"], \
-        posterior_probabilities["DeepWaterMap"] = rbc_objects[
-            "DeepWaterMap"].update_labels(
-            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
-        posterior["DeepWaterMap"] = posterior["DeepWaterMap"].reshape(dim_x, dim_y)
-        base_model_predicted_class["DeepWaterMap"] = base_model_predicted_class["DeepWaterMap"].reshape(dim_x, dim_y)
-
     # GMM Model
     # Update transition matrix
     eps = Config.eps_GMM[Config.test_site]
@@ -133,7 +86,7 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
 
     # Scaled Index Model
     # Update transition matrix
-    eps = Config.eps[Config.test_site]
+    eps = Config.eps_SIC[Config.test_site]
     if Config.scenario == "charles_river_3classes":
         transition_matrix = np.array(
             [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
@@ -176,8 +129,49 @@ def evaluate_models(image_all_bands: np.ndarray, rbc_objects: Dict[str, RBC], ti
     posterior["Logistic Regression"] = posterior["Logistic Regression"].reshape(dim_x, dim_y)
     base_model_predicted_class["Logistic Regression"] = base_model_predicted_class["Logistic Regression"].reshape(dim_x,
                                                                                                                   dim_y)
-    # plt.figure(), plt.imshow(likelihood["Logistic Regression"])
-    # plt.figure(), plt.imshow(posterior["Logistic Regression"])
+    # Benchmark Deep Learning models for the water mapping experiment
+    if Config.scenario == "oroville_dam" or Config.scenario == "charles_river":
+
+        # WatNet Algorithm
+        # Update transition matrix
+        eps = Config.eps_WN[Config.test_site]
+        if Config.scenario == "charles_river_3classes":
+            transition_matrix = np.array(
+                [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+                3, 3)
+        elif Config.test_site in [1, 2, 3]:
+            eps_aux = Config.eps_DWM_adaptive[Config.test_site]
+            transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+        else:
+            transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+        rbc_objects["WatNet"].transition_matrix = transition_matrix
+        # Evaluate
+        base_model_predicted_class["WatNet"], posterior["WatNet"], prediction_float["WatNet"], posterior_probabilities[
+            "WatNet"] = rbc_objects["WatNet"].update_labels(
+            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
+        posterior["WatNet"] = posterior["WatNet"].reshape(dim_x, dim_y)
+        base_model_predicted_class["WatNet"] = base_model_predicted_class["WatNet"].reshape(dim_x, dim_y)
+
+        # DeepWaterMap Algorithm
+        # Update transition matrix
+        eps = Config.eps_DWM[Config.test_site]
+        if Config.scenario == "charles_river_3classes":
+            transition_matrix = np.array(
+                [1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps, eps / 2, eps / 2, eps / 2, 1 - eps]).reshape(
+                3, 3)
+        elif Config.test_site in [1, 2, 3]:
+            eps_aux = Config.eps_DWM_adaptive[Config.test_site]
+            transition_matrix = np.array([1 - eps_aux, eps_aux, eps_aux, 1 - eps_aux]).reshape(2, 2)
+        else:
+            transition_matrix = np.array([1 - eps, eps, eps, 1 - eps]).reshape(2, 2)
+        rbc_objects["DeepWaterMap"].transition_matrix = transition_matrix
+        # Evaluate
+        base_model_predicted_class["DeepWaterMap"], posterior["DeepWaterMap"], prediction_float["DeepWaterMap"], \
+        posterior_probabilities["DeepWaterMap"] = rbc_objects[
+            "DeepWaterMap"].update_labels(
+            image_all_bands=image_all_bands, time_index=time_index, image_idx=image_index)
+        posterior["DeepWaterMap"] = posterior["DeepWaterMap"].reshape(dim_x, dim_y)
+        base_model_predicted_class["DeepWaterMap"] = base_model_predicted_class["DeepWaterMap"].reshape(dim_x, dim_y)
 
     # Dump data into pickle if this image index belongs to the list containing indices of images to store
     if image_index in Config.index_images_to_store[Config.test_site] and Config.evaluation_store_results:
@@ -301,28 +295,18 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
 
     #
     # Sensitivity Analysis
-    if Debug.store_pickle_sensitivity_analysis:
+    if Debug.store_pickle_sensitivity_analysis and Config.test_site in ['1a', '3']:
         #
         # ----- Save Quantitative Analysis (QA) Results - Pickle with accuracies
         path_save_pickle = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
-                                     f"{Config.scenario}","results",f"eps_{Config.eps[Config.test_site]}")
+                                     f"{Config.scenario}", 'results', f"eps_{Config.eps_SIC[Config.test_site]}")
         pickle.dump(results_figure.results_qa, open(path_save_pickle, 'wb'))
-        #
-        # ----- Save Classification figure
-        results_figure.adjust_figure()
-        # Save figure
-        path_save_fig = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
-                                     f"{Config.scenario}","results", f"fig_classification_eps_{Config.eps[Config.test_site]}.svg")
-        results_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
-        #
-        # ----- Save Appendix figure
-        settings = Visual.appendix_fig_settings[Config.test_site]
-        appendix_figure.f.subplots_adjust(wspace=settings['wspace'], hspace=settings['hspace'], top=settings['top'],
-                                          right=settings['right'], left=settings['left'], bottom=settings['bottom'])
-        # Save figure
-        path_save_fig = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
-                                     f"{Config.scenario}","results",f"fig_appendix_eps_{Config.eps[Config.test_site]}.svg")
-        appendix_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
+        path_save_figure =  os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
+                                     f"{Config.scenario}", "sensitivity_analysis.svg")
+        # Set up paths and configurations
+        results_path = os.path.join(Config.path_evaluation_results, "sensitivity_analysis",
+                                     f"{Config.scenario}", 'results')
+        plot_results(save_path=path_save_figure, Config=Config, results_path=results_path)
 
     if Visual.appendix_fig_settings['save']:
         settings = Visual.appendix_fig_settings[Config.test_site]
@@ -335,27 +319,25 @@ def evaluation_main(gmm_densities: List[GaussianMixture], trained_lr_model: Logi
         appendix_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
 
     if Visual.class_fig_settings['save']:
-        # 1b every 4
-        # Visual.class_fig_settings[Config.test_site]['dist_aux'] = 0.13
-        # Visual.class_fig_settings[Config.test_site]['height_image'] = 0.025
-        # Visual.class_fig_settings[Config.test_site]['dist_separation'] = 0.005
-        # Visual.class_fig_settings[Config.test_site]['tuned_wspace'] = -0.09
-        # Visual.class_fig_settings[Config.test_site]['tuned_hspace'] = -0.2
         # Adjust layout
         results_figure.adjust_figure()
         # Save figure
-        path_save_fig = os.path.join(Config.path_evaluation_results, "classification",f"{Config.scenario}_{Config.test_site}",
-                                     f"figures", f"fig_config_{Config.conf_id}.svg")
+        path_save_fig = os.path.join(Config.path_evaluation_results, "classification", f"{Config.scenario}_{Config.test_site}",
+                                     f"figures", f"fig_config_{Config.conf_id}_quantitative.svg")
         results_figure.f.savefig(path_save_fig, bbox_inches='tight', format='svg', dpi=1000)
 
-    # If QA results are saved we can (1) compute boxplot and (2) update table afterwards
-    if Config.qa_settings['save_results']:
+    # If QA results are saved we can
+    # - (1) save balanced accuracy and models
+    if Config.qa_settings['save']:
         path_results_metrics = os.path.join(path_results, f'{Config.scenario}_{Config.test_site}', f'accuracy',
                                             f'conf_{Config.conf_id}')
         pickle.dump(results_figure.plot_legend[:-1], open(os.path.join(path_results_metrics, "models.pkl"), "wb"))
         for acc in Config.qa_settings['metrics']:
             path_i = os.path.join(path_results_metrics, f'{acc}.pkl')
             pickle.dump(results_figure.results_qa[acc], open(path_i, "wb"))
+    # - (2) compute boxplot
+    if Visual.qa_fig_settings['plot']:
+        plot_qa_boxplot(Config=Config)
     print('Evaluation Main is FINISHED')
 
 

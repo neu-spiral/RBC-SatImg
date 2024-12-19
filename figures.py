@@ -1,13 +1,10 @@
-import matplotlib.pyplot as plt
 import numpy as np
-import pickle
-import os
 
-from typing import List, Dict
 from matplotlib import colors
-from configuration import Config, Debug, Visual
+
+from configuration import Config, Visual
 from tools.operations import normalize
-from collections import Counter
+
 
 def plot_image(axes: np.ndarray, image: np.ndarray, indices_axes: list):
     """ Provides a plot of the input image within the specified axes.
@@ -19,6 +16,7 @@ def plot_image(axes: np.ndarray, image: np.ndarray, indices_axes: list):
         axes[indices_axes[0], indices_axes[1]].spines[axis].set_linewidth(0)
     axes[indices_axes[0], indices_axes[1]].get_yaxis().set_ticks([])
     axes[indices_axes[0], indices_axes[1]].get_xaxis().set_ticks([])
+
 
 def get_rgb_image(image_all_bands: np.ndarray):
     """ Returns the RGB image of the input image.
@@ -52,7 +50,6 @@ def get_rgb_image(image_all_bands: np.ndarray):
     y = image_all_bands[:, band_g_pos].reshape(dim_h, dim_v)
     z = image_all_bands[:, band_b_pos].reshape(dim_h, dim_v)
 
-
     # Stack the three bands
     rgb = np.dstack((x, y, z))
 
@@ -60,53 +57,9 @@ def get_rgb_image(image_all_bands: np.ndarray):
     rgb_image = rgb.reshape(dim_h, dim_v, 3)
     return rgb_image
 
-def get_green_image(image_all_bands: np.ndarray):
-    """ Returns the RGB image of the input image.
 
-    Parameters
-    ----------
-    image_all_bands : np.ndarray
-        array containing the bands of the image
-
-    Returns
-    -------
-    rgb_image : np.ndarray
-        computed rgb image
-
-    """
-    # Get image dimensions
-    dim_h = Config.image_dimensions[Config.scenario]['dim_x']
-    dim_v = Config.image_dimensions[Config.scenario]['dim_y']
-
-    # Get position of RGB bands within the *Config.bands_to_read* list
-    band_r_pos = Config.bands_to_read.index('4')  # Red (band 4)
-    band_g_pos = Config.bands_to_read.index('3')  # Green (band 3)
-    band_b_pos = Config.bands_to_read.index('2')  # Blue (band 2)
-
-    # Get pixel values for all RGB bands
-    x = normalize(image_all_bands[:, band_r_pos]).reshape(dim_h, dim_v)
-    y = normalize(image_all_bands[:, band_g_pos]).reshape(dim_h, dim_v)
-    z = normalize(image_all_bands[:, band_b_pos]).reshape(dim_h, dim_v)
-    # Try without normalization:
-    x = image_all_bands[:, band_r_pos].reshape(dim_h, dim_v)
-    y = image_all_bands[:, band_g_pos].reshape(dim_h, dim_v)
-    z = image_all_bands[:, band_b_pos].reshape(dim_h, dim_v)
-
-
-    # Stack the three bands
-    if Config.scenario == 'multiearth':
-        rgb = np.dstack((x, y, z))
-    else:
-        rgb = np.dstack((x, y, z)) * Visual.scaling_rgb[Config.test_site]
-
-    # Reshape to get proper image dimensions
-    rgb_image = rgb.reshape(dim_h, dim_v, 3)
-    max_channel_2 = np.max(rgb_image, axis=2)
-    green_image = np.where((rgb_image[:,:,1] == max_channel_2), 1, 0)
-    return green_image
-
-
-
+# DEPRECATED FUNCTIONS:
+'''
 def plot_results(image_all_bands: np.ndarray, likelihood: Dict[str, np.ndarray], posterior: Dict[str, np.ndarray], labels: np.ndarray, time_index: int, date_string : str, image_idx: int):
     """ Plots evaluation plot_figures when evaluating the target models on the input image.
 
@@ -254,3 +207,49 @@ def plot_results(image_all_bands: np.ndarray, likelihood: Dict[str, np.ndarray],
     f.suptitle(date_string)
     plt.show()
     plt.close()
+    
+
+def get_green_image(image_all_bands: np.ndarray):
+    """ Returns the RGB image of the input image.
+
+    Parameters
+    ----------
+    image_all_bands : np.ndarray
+        array containing the bands of the image
+
+    Returns
+    -------
+    rgb_image : np.ndarray
+        computed rgb image
+
+    """
+    # Get image dimensions
+    dim_h = Config.image_dimensions[Config.scenario]['dim_x']
+    dim_v = Config.image_dimensions[Config.scenario]['dim_y']
+
+    # Get position of RGB bands within the *Config.bands_to_read* list
+    band_r_pos = Config.bands_to_read.index('4')  # Red (band 4)
+    band_g_pos = Config.bands_to_read.index('3')  # Green (band 3)
+    band_b_pos = Config.bands_to_read.index('2')  # Blue (band 2)
+
+    # Get pixel values for all RGB bands
+    x = normalize(image_all_bands[:, band_r_pos]).reshape(dim_h, dim_v)
+    y = normalize(image_all_bands[:, band_g_pos]).reshape(dim_h, dim_v)
+    z = normalize(image_all_bands[:, band_b_pos]).reshape(dim_h, dim_v)
+    # Try without normalization:
+    x = image_all_bands[:, band_r_pos].reshape(dim_h, dim_v)
+    y = image_all_bands[:, band_g_pos].reshape(dim_h, dim_v)
+    z = image_all_bands[:, band_b_pos].reshape(dim_h, dim_v)
+
+    # Stack the three bands
+    if Config.scenario == 'multiearth':
+        rgb = np.dstack((x, y, z))
+    else:
+        rgb = np.dstack((x, y, z)) * Visual.scaling_rgb[Config.test_site]
+
+    # Reshape to get proper image dimensions
+    rgb_image = rgb.reshape(dim_h, dim_v, 3)
+    max_channel_2 = np.max(rgb_image, axis=2)
+    green_image = np.where((rgb_image[:, :, 1] == max_channel_2), 1, 0)
+    return green_image
+'''

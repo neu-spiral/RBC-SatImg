@@ -1,16 +1,15 @@
 import os
 import logging
-
-import numpy as np
-import skimage
 import pickle
 
+from abc import ABC, abstractmethod
+
+import numpy as np
 from osgeo import gdal
 from skimage import transform
-from abc import ABC, abstractmethod
+
 from configuration import Config
 from tools.path_operations import get_path_image
-
 
 class ImageReader(ABC):
     """ Abstract class ImageReader. All compatible image readers must inherit from
@@ -103,11 +102,11 @@ class ReadSentinel2(ImageReader):
 
         """
         band = gdal.Open(path_band).ReadAsArray()
-        #print(f'Mean Value Band {np.mean(band)}')
-        # Check if the image dimensions are the proper ones
+
+        # Check if the image dimensions are the desired ones
         if band.shape != (self.dim_x, self.dim_y):
             band = transform.resize(band, (self.dim_x, self.dim_y), anti_aliasing=True, preserve_range=True)
-            #print('issue')
+
         return band
 
     def read_image(self, path: str, image_idx: int, shift_option: str = None):
@@ -196,9 +195,9 @@ class ReadSentinel2(ImageReader):
             shifted_image[:, idx] = image[:, idx] + hist_offset
         return shifted_image
 
-"""
+
     def check_clouds(self, image: np.ndarray, threshold: float):
-        """ """ Checks whether the input image has too many clouds, according to an illumination threshold and by checking
+        """ Checks whether the input image has too many clouds, according to an illumination threshold and by checking
         the image histogram.
 
         Parameters
@@ -213,7 +212,7 @@ class ReadSentinel2(ImageReader):
         above_threshold : bool
             True if the image has too many clouds according to the provided threshold. False otherwise.
 
-        """ """
+        """
         print('Checking if image has too many clouds according to the threshold')
         # Normalize image
         image_normalized = (image - np.min(image)) / (np.max(image) - np.min(image))
@@ -224,4 +223,3 @@ class ReadSentinel2(ImageReader):
         else:
             above_threshold = False
         return above_threshold, sum_pixels
-"""

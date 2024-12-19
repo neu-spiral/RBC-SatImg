@@ -4,16 +4,23 @@ import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
-
-
 from sklearn.mixture import GaussianMixture
 from sklearn.linear_model import LogisticRegression
 
 from image_reader import ReadSentinel2
 from configuration import Config, Debug
-from tools.spectral_index import get_num_images_in_folder, get_broadband_index, get_labels_from_index
-from tools.cloud_filtering import get_ci_2_labels, get_csi_labels, get_ndvi_cloud_detector_labels, scale_image, \
+from tools.spectral_index import (
+    get_num_images_in_folder,
+    get_broadband_index,
+    get_labels_from_index
+)
+from tools.cloud_filtering import (
+    get_ci_2_labels,
+    get_csi_labels,
+    get_ndvi_cloud_detector_labels,
+    scale_image,
     check_cloud_threshold
+)
 from figures import get_rgb_image, plot_image
 
 

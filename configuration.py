@@ -1,8 +1,23 @@
-import numpy as np
 import logging
 import os
-
 from datetime import datetime
+
+"""
+Configuration File for Recursive Bayesian Classification Framework
+
+This file contains configurable parameters for the implementation of the 
+recursive classification framework described in:
+
+[1] "Recursive classification of satellite imaging time-series: An application to land cover mapping"
+    by Helena Calatrava et al.
+    Published in ISPRS Journal of Photogrammetry and Remote Sensing, 2024.
+    DOI: https://doi.org/10.1016/j.isprsjprs.2024.09.003
+    
+Corresponding Author:
+- Helena Calatrava (Northeastern University, Boston, MA, USA)
+Last Updated:
+- December 2024
+"""
 
 
 class Debug:
@@ -29,7 +44,7 @@ class Debug:
     # --------------------------------------------------------------------
     store_pickle_sensitivity_analysis_water_mapping = False  # True if wanting to store results for sensitivity
     # analysis of the transition probability parameter in the water mapping experiments (Oroville Dam and Charles River)
-    store_pickle_sensitivity_analysis = True  # True if wanting to store results for sensitivity
+    store_pickle_sensitivity_analysis = False  # True if wanting to store results for sensitivity
     # analysis of the transition probability parameter in the deforestation detection experiment (Amazon rainforest)
     pickle_histogram = False  # True if wanting to store results for histogram analysis
     check_dates = False  # If True, we do not evaluate, and just print the dates of the evaluation images
@@ -37,7 +52,7 @@ class Debug:
     # --------------------------------------------------------------------
     # Generate ground truth labels
     # --------------------------------------------------------------------
-    # CODE TO GENERATE THE GROUND TRUTH LABELS HAS NOT BEEN ADDED IN THIS CODE
+    # CODE TO GENERATE THE GROUND TRUTH LABELS HAS NOT BEEN ADDED IN THIS VERSION
 
     # --------------------------------------------------------------------
     # Adaptive Transition Probability Parameter - [DEPRECATED FOR THIS IMPLEMENTATION]
@@ -53,7 +68,6 @@ class Debug:
     @staticmethod
     def set_logging_file(time_now: datetime):
         """ Creates a log file for the current code execution.
-
 
         force = True in logging.basicConfig() because otherwise the file path is not updated (see [https://stackoverflow.com/questions/30861524/logging-basicconfig-not-creating-log-file-when-i-run-in-pycharm])
 
@@ -84,6 +98,7 @@ class Visual:
 
     #
     # General Settings
+    # 'scenario_name' : ['land_color', 'water_color', 'vegetation_color']
     cmap = {'charles_river': ['yellow', '#440154'],
             'oroville_dam': ['yellow', '#440154'],
             'multiearth': ['#440154', 'yellow'],
@@ -94,6 +109,7 @@ class Visual:
 
     #
     # Classification figure (with accuracy metric, classification error maps and labels)
+    # Figures 10-13 from [1]
     class_fig_settings = {
         # Options
         'save': False,
@@ -129,7 +145,8 @@ class Visual:
     }
 
     #
-    # Appendix figure
+    # Appendix figure (all evaluated dates are plotted)
+    # Supplementary Material in [1]
     appendix_fig_settings = {
         # Options
         'save': False,
@@ -165,13 +182,13 @@ class Visual:
     }
 
     #
-    # Quantitative Analysis (QA) figure (boxplot)
+    # Quantitative Analysis (QA) figure (boxplot in Figure 14 from [1])
     water_mapping_models = ["SIC", 'GMM', "LR", 'DWM', 'WN', 'RSIC', 'RGMM', 'RLR', 'RDWM', 'RWN']
     deforestation_detection_models = ["SIC", 'GMM', "LR", 'RSIC', 'RGMM', 'RLR']
     qa_fig_settings = {
         # Options
         'save': False,
-        'plot': False,
+        'plot': True,
         # Legend models
         'legend_models': {'1a': water_mapping_models,
                           '1b': water_mapping_models,
@@ -180,34 +197,37 @@ class Visual:
                           },
     }
 
-
 class Config:
     """ Some CONFIGURATION settings must be changed when executing the code with data that is
     different to the one provided by the authors.
 
     """
 
-    # TODO: Change conf ID as desired (directory and file names might be created using this ID)
-    conf_id = "00"  # Running ts '2': eps 0.1, norm_constant 0.3 for DL and 0 for others
+    # TODO: Change conf ID as desired (directory and file names may include this ID)
+    conf_id = "00"
     if conf_id == "00":
         # has been processed with test site '2'
         # conf_id 03 is the same but with offset 2
-        eps = {'1a': 0.05, '1b': 0.05, '2': 0.1, '3': 0.01}  # SIC and WN models
-        eps_DWM = {'1a': 0.05, '1b': 0.05, '2': 0.1, '3': None}  # WN model
-        eps_GMM = {'1a': 0.05, '1b': 0.05, '2': 0.1, '3': 0.005}  # GMM model
-        eps_LR = {'1a': 0.05, '1b': 0.05, '2': 0.1, '3': 0.06}  # LR model
-        norm_constant_DL = {'1a': 0.3, '1b': 0.3, '2': 0.3, '3': None}
-        norm_constant_SIC = {'1a': 0, '1b': 0, '2': 0, '3': 0.1}
-        norm_constant_GMM = {'1a': 0, '1b': 0, '2': 0, '3': 0.2}
-        norm_constant_LR = {'1a': 0, '1b': 0, '2': 0, '3': 0.2}
+        eps_SIC = {'1a': 0.001, '1b': 0.02, '2': 0.1, '3': 0.03}  # SIC and WN models
+        eps_WN = {'1a': 0.005, '1b': 0.085, '2': 0.001, '3': None}  # WN model
+        eps_DWM = {'1a': 0.001, '1b': 0.095, '2': 0.001, '3': None}  # WN model
+        eps_GMM = {'1a': 0.2, '1b': 0.09, '2': 0.001, '3': 0.04}  # GMM model
+        eps_LR = {'1a': 0.001, '1b': 0.02, '2': 0.005, '3': 0.04}  # LR model
+        norm_constant_DL = {'1a': 0.8, '1b': 0.8, '2': 0.8, '3': None}
+        norm_constant_SIC = {'1a': 0.8, '1b': 0.8, '2': 0.8, '3': 0.8}
+        norm_constant_GMM = {'1a': 0.8, '1b': 0.8, '2': 0.8, '3': 0.8}
+        norm_constant_LR = {'1a': 0.8, '1b': 0.8, '2': 0.8, '3': 0.8}
+    #elif conf_id =="01": # Add more configurations as desired
 
     # --------------------------------------------------------------------
     # Paths
     # --------------------------------------------------------------------
     # TODO: Download deepwatermap checkpoints file and store in 'path_checkpoints_deepwatermap'
+    # DWM checkpoints can be found here: https://github.com/isikdogan/deepwatermap/tree/master/checkpoints
     path_checkpoints_deepwatermap = r"/Users/helena/Documents/RESEARCH/Recursive_Bayesian_Image_Classification/2023nov/Sentinel2_data/oroville_dam/checkpoints/cp.135.ckpt"
-    # TODO: Download files from zenodo and store in 'path_zenodo'
-    path_zenodo = r"/Users/helena/Documents/Research/Recursive_Bayesian_Image_Classification/2023nov"  # contains the folder downloaded from Zenodo
+    # TODO: Download files from our Zenodo's data (Version 3) and store in 'path_zenodo'
+    # Zenodo (Version 3): https://zenodo.org/records/13345343, https://doi.org/10.5281/zenodo.13345343
+    path_zenodo = r"/Users/helena/Documents/Research/Recursive_Bayesian_Image_Classification/RBC-SatImg_data"  # contains the folder downloaded from Zenodo
     #
     path_evaluation_results = os.path.join(path_zenodo, "evaluation_results")
     path_sentinel_images = os.path.join(path_zenodo, "Sentinel2_data")
@@ -234,18 +254,17 @@ class Config:
     scaling_factor_watnet = 1  # used to pre-process Sentinel-2 images to input the DL algorithms (DWM and WN)
 
     #
-    # Histogram shifting factor
+    # Histogram shifting factor (for MultiEarth Dataset analysis - test site 3 in [1])
     #
-    # This is explained in Section 2.3 from the paper "Recursive classification of satellite imaging time-series: An
-    # application to land cover mapping". Text: " a time-varying bias is fitted to each image, for which an area
+    # This is explained in Section 2.3 from [1]. Text: " a time-varying bias is fitted to each image, for which an area
     # where the statistics are expected to be time-invariant (i.e., no clouds or disturbances are observed inside
     # that area for all evaluation dates) is selected."
     shifting_factor_available = True  # If True, a previously calculated offset is applied to pixel magnitudes (this is
     # required for the MultiEarth experiment). This should be set to False when running the image scaling tool.
     #
-    # Coordinates of the area free of clouds/cloud shadows: The following are used in image_scaling.py to apply the
-    # time-varying bias to each image as discussed in the paper and in cloud_filtering.py to check the
-    # percentage of detected cloud/cloud shadow
+    # Coordinates of the area free of clouds/cloud shadows: The following are used in:
+    # - image_scaling.py to apply the time-varying bias to each image
+    # - cloud_filtering.py to check the percentage of detected cloud/cloud shadow
     coord_scale_x = [70, 150]
     coord_scale_y = [0, 70]
 
@@ -254,7 +273,7 @@ class Config:
     # --------------------------------------------------------------------
     #
     # TODO: Select test site to evaluate
-    test_site = '1a'  # '1a' | '1b' | '2' | '3'
+    test_site = '3'  # '1a' | '1b' | '2' | '3'
     #   - test_site = '1a' for Oroville Dam (water stream)
     #   - test_site = '1b' for Oroville Dam (peninsula)
     #   - test_site = '2' for Charles River
@@ -305,8 +324,8 @@ class Config:
     # --------------------------------------------------------------------
 
     #
-    # TODO: Change the pickle-related variables so that (a) the GMM and LR models are trained or (b) previously
-    #  trained GMM and LR models are used in the experiments
+    # TODO: Change the pickle-related variables to (a) train the GMM and LR models or to (b) use pre-trained GMM and
+    #  LR models
     gmm_dump_pickle = False  # False if wanting to use a stored pretrained model for GMM - True if wanting to train the
     # GMM model again
     trained_lr_model_pickle = False  # False if wanting to use a stored pretrained model for LR - True if wanting to
@@ -324,6 +343,7 @@ class Config:
     # Training data cropping: The amount of pixels used for training, which belong to the training regions described
     # in the manuscript, can be cropped to speed up code execution
     training_data_crop_ratio = {'charles_river': 0.7, 'oroville_dam': 0.5, 'multiearth': 1} #
+
     #
     # Model Selection (GMM)
     # These values have been set after data inspection
@@ -354,7 +374,7 @@ class Config:
     # If evaluation is skipped, previously stored evaluation results are plotted
     evaluation_store_results = False # True if wanting to store evaluation results for
     # further visualization
-    evaluation_generate_results_likelihood = True  # True if wanting to generate instantaneous classifier results and
+    evaluation_generate_results_likelihood = False  # True if wanting to generate instantaneous classifier results and
     # store them, False if wanting to use pre-generated and pre-stored likelihood results
 
     #
@@ -367,16 +387,6 @@ class Config:
     index_images_to_evaluate = {'1b': [*range(offset_eval_images[scenario], 42, 1)],
                                 '1a': [*range(offset_eval_images[scenario], 42, 1)],
                                 '2': [*range(offset_eval_images[scenario], 28, 1)],
-                                # '2': [*range(offset_eval_images[scenario], 5, 1)],
-                                # '3': [0, 2, 3, 5, 7, 9, 11, 21, 49, 66, 67, 69, 71, 72, 73, 74, 75, 76, 77, 78,
-                                # 81, 82, 83, 89, 90, 101, 103, 108, 130, 134, 135, 140, 142, 144, 145, 146, 147,
-                                # 148, 150, 161, 175] # original vector from cloud filter
-                                # '3': [0, 2, 3, 5, 7, 9, 11, 21, 66, 67, 69, 71, 72, 73, 75, 76, 77, 78,
-                                # 82, 90, 101, 103, 108, 134, 145, 146,
-                                # 150, 161, 175]}
-                                # '3': [2, 3, 5, 7, 9, 11, 21, 66, 67, 69, 71, 72, 73, 75, 76, 77, 78,
-                                #       82, 90, 101, 103, 108, 134, 145, 146,
-                                #       150, 161, 175]  # plot all dates
                                 '3': [2, 3, 5, 7, 9, 11, 21, 66, 67, 69, 71, 72, 73, 75, 76, 77, 78,
                                       82, 90, 101, 103, 108, 134, 145, 146,
                                       150, 161, 175]  # plot all dates
@@ -385,14 +395,7 @@ class Config:
     # Index of images to plot in the classification results figure
     index_images_to_plot = {'1a': [*range(offset_eval_images[scenario], 42, 4)],
                             '1b': [*range(offset_eval_images[scenario], 42, 8)],
-                            # '2': [*range(offset_eval_images[scenario], 28, 1)],
                             '2': [3, 5, 9, 13, 17, 21, 25],
-                            # '3': [0, 2, 3, 5, 7, 9, 11, 21, 49, 66, 67, 69, 71, 72, 73, 74, 75, 76, 77, 78,
-                            # 81, 82, 83, 89, 90, 101, 103, 108, 130, 134, 135, 140, 142, 144, 145, 146, 147,
-                            # 148, 150, 161, 175] # original vector from cloud filter
-                            # '3': [0, 2, 3, 5, 7, 9, 11, 21, 66, 67, 69, 71, 72, 73, 75, 76, 77, 78,
-                            # 82, 90, 101, 103, 108, 134, 145, 146,
-                            # 150, 161, 175]}
                             '3': [5, 66, 76, 134, 150]  # plot dates for qualitative analysis experiment 3
                             }
     # If wanting to store evaluation results obtained with all dates (consider the previous important note regarding
@@ -402,7 +405,7 @@ class Config:
                              '2': [*range(offset_eval_images[scenario], 28, 1)],
                              '3': [*range(0, 217)]}
     #
-    # If wanting to store only evaluation results to reproduce Figure 5 (these results are already provided in the Zenodo folder)
+    # Uncomment the following line to store only evaluation results
     # Config.index_images_to_store = Config.index_images_to_plot
     #
     #
@@ -419,7 +422,7 @@ class Config:
                       'RLogistic Regression']
     qa_settings = {
         # Options
-        'save_results': False,  # If QA results are saved we can (1) compute boxplot and (2) update table afterwards
+        'save': False,  # If QA results are saved we can (1) compute boxplot and (2) update table afterwards
         # Accuracy metrics considered
         # 'metrics': ["accuracy", "balanced_accuracy", "f1"],
         'metrics': ["balanced_accuracy"],
