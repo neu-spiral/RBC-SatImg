@@ -6,7 +6,7 @@ from configuration import Config
 from typing import List
 
 '''
-# This function is not used
+# The get_pos_condition_index function is DEPRECATED
 def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     """ Returns the positions of the vector *index* that match the thresholds defined
     in the configuration file.
@@ -26,7 +26,7 @@ def get_pos_condition_index(class_idx: int, spectral_index: np.ndarray):
     """
     # Get list with the corresponding threshold values from the configuration file
     # Being N the number of classes, the class index
-    threshold_list = Config.gm_model_selection[Config.scenario]['thresholds']
+    threshold_list = Config.threshold_index_labels[Config.scenario]
 
     # Create empty array to store the target positions
     positions_th_1 = np.empty(shape=0)
@@ -150,13 +150,15 @@ def get_broadband_index(data: np.ndarray, bands: List[str]):
     return index_without_nan
 
 
-def get_labels_from_index(index: np.ndarray, num_classes: int):
+def get_labels_from_index(index: np.ndarray, num_classes: int, threshold: float):
     """ Calculates labels from the spectral index values for this data set.
 
     Parameters
     ----------
     index : np.ndarray
         array with stored spectral index values for this set of images
+    threshold : float
+        labeling threshold
 
     Returns
     -------
@@ -164,17 +166,17 @@ def get_labels_from_index(index: np.ndarray, num_classes: int):
         array with labels calculated considering the spectral index values
 
     """
-    if num_classes == 2:
+    if len(threshold) + 1 == 2:
         labels = np.transpose(index.copy())
-        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0],
+        np.place(labels, index < threshold,
                  0)  # labels under threshold are set to 0
-        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0],
+        np.place(labels, index >= threshold,
                  1)  # labels over threshold are set to 1
-    elif num_classes == 3:
+    elif len(threshold) + 1 == 3:
         labels = np.transpose(index.copy())  # TODO: check if this line can be removed
-        np.place(labels, index < Config.gm_model_selection[Config.scenario]['thresholds'][0], 0)
-        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][0], 1)
-        np.place(labels, index >= Config.gm_model_selection[Config.scenario]['thresholds'][1], 2)
+        np.place(labels, index < threshold[0], 0)
+        np.place(labels, (index >= threshold[0]) & (index <= threshold[1]), 1)
+        np.place(labels, index >= threshold[1], 2)
     return labels
 
 
@@ -195,7 +197,9 @@ def get_scaled_index(spectral_index: np.ndarray, num_classes: int):
 
     """
     # Get mean and standard deviation values for the Scaled Index Model with this configuration
-    mean_values, std_values = get_mean_std_scaled_index_model(Config.gm_model_selection[Config.scenario]['thresholds'])
+    mean_values, std_values = get_mean_std_scaled_index_model(Config.threshold_index_labels[Config.scenario])
+    print(mean_values)
+    print(std_values)
 
     list_pdf_values = []
     for i in range(num_classes):
