@@ -6,8 +6,8 @@
 
 
 
-# Recursive Bayesian Classifier for Satellite Remote Sensing Time Series
-🌍 🛰️️
+# Recursive Bayesian Classification Framework for Satellite Imaging Time Series️
+## 🌍 🛰️ An Application to Land Cover/Water Mapping and Deforestion Detection 
 [comment]: https://gist.github.com/kimjisub/360ea6fc43b82baaf7193175fd12d2f7
 
 ![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)
@@ -148,7 +148,7 @@ The dataset *RBC-SatImg: Sentinel-2 Imagery and WatData Labels for Water Mapping
 3. **Dataset Usage**:
    - Sentinel-2 imagery is used for training and evaluation.
    - Pre-computed results in `./evaluation_results/` allow reproducing figures and findings in the paper without re-running computationally expensive simulations.
-<p align="right"><a href="#recursive-bayesian-classifier-for-satellite-remote-sensing-time-series">⬆ Back to Top</a></p>
+<p align="right"><a href="#Recursive-Bayesian-Classification-Framework-for-Satellite-Imaging-Time-Series️">⬆ Back to Top</a></p>
 
 
 ## 🌍  Study Areas
