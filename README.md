@@ -6,7 +6,8 @@
 
 
 
-# Recursive 🌍 🛰️️
+# Recursive
+🌍 🛰️️
 [comment]: https://gist.github.com/kimjisub/360ea6fc43b82baaf7193175fd12d2f7
 
 ![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)
